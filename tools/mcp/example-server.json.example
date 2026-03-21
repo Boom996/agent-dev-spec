@@ -1,0 +1,10 @@
+{
+  "comment": "示例：按实际 MCP 客户端要求调整字段名",
+  "mcpServers": {
+    "example-server": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-example"],
+      "env": {}
+    }
+  }
+}

@@ -1,0 +1,33 @@
+# 多 Agent 协作入口（示例）
+
+> 将本文件复制为 `.ai/START_HERE.md` 并按项目修改。  
+> 规范：**Agent 开发规范（ADS）** / **Agent Development Specification**
+
+## 当前阶段目标
+
+（例如：MVP Week 1 — 基础 UI 与布局）
+
+## 角色
+
+| 角色 | 职责 |
+|------|------|
+| Architect | 架构、接口、审查 |
+| Frontend | 组件与页面 |
+| Backend | 数据与 API |
+| Integration | 合并、E2E、验证命令 |
+
+## 任务入口
+
+- 待办：`tasks/backlog.md`
+- 进行中：`tasks/in-progress.md`
+- 已完成：`tasks/completed.md`
+
+## 纪律提醒
+
+1. 先读仓库根目录 **`README_AGENT.md`**
+2. 交接必须写入 **`handoffs/<task-id>.md`**
+3. 完成任务前补齐 **证据**（见任务模板 `evidence_expectation`）
+
+## 规格目录
+
+- `specs/`（若使用）

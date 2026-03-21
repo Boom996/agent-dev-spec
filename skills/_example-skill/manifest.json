@@ -1,0 +1,21 @@
+{
+  "tool_id": "example_tool_id",
+  "name": "example_skill",
+  "version": "1.0.0",
+  "description": "示例：对 ADS manifest 字段的占位说明。真实技能请替换描述与参数。",
+  "entry": {
+    "type": "script",
+    "path": "./run.sh",
+    "interpreter": "bash"
+  },
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "input": {
+        "type": "string",
+        "description": "示例输入"
+      }
+    },
+    "required": ["input"]
+  }
+}

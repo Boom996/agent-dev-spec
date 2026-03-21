@@ -1,0 +1,33 @@
+{
+  "$schema_comment": "复制为 toolset.json；tool_id 须与 skills/*/manifest.json 一致",
+  "version": "1.0",
+  "registry": "project-local",
+  "tools": [
+    {
+      "tool_id": "example_tool_id",
+      "title": "示例工具",
+      "description": "一句话说明模型何时应调用",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "skill",
+      "manifest": "skills/_example-skill/manifest.json"
+    },
+    {
+      "tool_id": "shared_release_gate",
+      "title": "共享发布闸口",
+      "description": "用于集成与发布前检查的示例高风险工具占位",
+      "owner": "integration",
+      "risk_level": "high",
+      "version": "1.0.0",
+      "source": "skill",
+      "manifest": "skills/_example-skill/manifest.json"
+    }
+  ],
+  "mcp_servers": [
+    {
+      "id": "example-server",
+      "config_path": "tools/mcp/example-server.json.example"
+    }
+  ]
+}

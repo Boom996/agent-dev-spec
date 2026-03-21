@@ -1,0 +1,7 @@
+interface:
+  display_name: "Competitive Plan Validator"
+  short_description: "External competitor scan and plan stress test"
+  default_prompt: "Use $competitive-plan-validator to compare this product plan against current competitors and turn the findings into concrete product improvements."
+
+policy:
+  allow_implicit_invocation: true

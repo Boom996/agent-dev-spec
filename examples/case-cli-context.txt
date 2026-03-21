@@ -1,0 +1,38 @@
+# ADS CLI 上下文包 — TASK-20260321-001
+# 用途：粘贴到 Codex CLI / 无状态 Agent 单轮任务（勿当生产密钥使用）
+
+[PROJECT] your-project
+[ADS] Agent Development Specification
+[TASK_ID] TASK-20260321-001
+[OWNER_ROLE] Frontend
+[TRACE_ID] TRACE-20260321-001
+[LOCKED_PATHS]
+- frontend/src/components/ui/Button.vue
+- frontend/src/components/layout/AppLayout.vue
+[FORBIDDEN_PATHS]
+- frontend/src/stores/**
+[ACCEPTANCE]
+- 存在 `Button.vue`，暴露 `variant`（至少 `primary` / `secondary`）与 `disabled`
+- 使用 Tailwind，无内联魔法色值（使用主题类名）
+- 键盘可聚焦，Enter/Space 可触发 click
+- `AppLayout.vue`（或等价布局）中有一处 `<Button>` 示例
+- `npm run lint` 无新增错误
+- `npm run build` 通过
+[RELATED_PATHS]
+- frontend/src/components/ui/
+- docs/03-development/coding-standards.md
+[VERIFY]
+npm run lint
+npm run test
+npm run build
+[CONTEXT_FILES]
+- examples/case-task-button.md (full task contract)
+- README_AGENT.md (repo root)
+- examples/case-handoff-button.md (latest handoff)
+[HANDOFF_STATUS]
+实现已完成；本地已跑 lint/build。请 Integration 复核并合并。
+[MEMORY_REFS]
+- examples/case-memory-button-contract.md
+[OUTPUT]
+- Implement or review only within LOCKED_PATHS
+- Summarize files changed + verification output

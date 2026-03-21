@@ -1,0 +1,33 @@
+# 复制为 agent_map.yaml。用于对齐多客户端路径与首读文件（无业务逻辑）。
+# Agent Development Specification (ADS)
+
+version: 1
+
+clients:
+  cursor:
+    cwd: .
+    read_first:
+      - README_AGENT.md
+      - docs/03-development/ai-context.md
+    notes: "在项目规则中引用 README_AGENT.md"
+
+  claude_code:
+    cwd: .
+    read_first:
+      - README_AGENT.md
+      - .ai/START_HERE.md
+    env_file: .env.local
+
+  codex_cli:
+    cwd: .
+    context_bundle_glob: ".ai/handoffs/*-context.txt"
+    notes: "无状态 CLI 优先粘贴 handoff + task 生成的上下文包"
+
+# 可选：各 profile 额外 include
+profiles:
+  frontend:
+    locked_paths_hint:
+      - frontend/src/components/
+  backend:
+    locked_paths_hint:
+      - backend/

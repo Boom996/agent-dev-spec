@@ -1,0 +1,22 @@
+{
+  "$schema_comment": "复制为 identity.json 并按项目修改",
+  "ads_version": "1.0",
+  "project_name": "your-project",
+  "vision_one_liner": "用一句话描述产品或本仓库目标",
+  "default_roles": ["Architect", "Frontend", "Backend", "Integration"],
+  "default_team_patterns": ["frontend-backend-integration", "human-agent-review"],
+  "constraints": [
+    "TypeScript strict",
+    "禁止在 PR 中引入未文档化的环境变量"
+  ],
+  "standard_verify_commands": {
+    "lint": "npm run lint",
+    "test": "npm run test",
+    "build": "npm run build"
+  },
+  "docs_entry": {
+    "readme_agent": "README_AGENT.md",
+    "ai_context": "docs/03-development/ai-context.md",
+    "start_here": ".ai/START_HERE.md"
+  }
+}
