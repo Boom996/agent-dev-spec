@@ -3,7 +3,7 @@
   "ads_version": "1.0",
   "project_name": "your-project",
   "vision_one_liner": "用一句话描述产品或本仓库目标",
-  "default_roles": ["Architect", "Frontend", "Backend", "Integration"],
+  "default_roles": ["Architect", "Frontend", "Backend", "Integration", "HumanOwner", "Reviewer", "AgentImplementer"],
   "default_team_patterns": ["frontend-backend-integration", "human-agent-review"],
   "constraints": [
     "TypeScript strict",

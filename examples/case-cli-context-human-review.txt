@@ -1,0 +1,37 @@
+# ADS CLI 上下文包 — TASK-20260321-003
+# 用途：粘贴到 Codex CLI / 无状态 Agent 单轮任务（勿当生产密钥使用）
+
+[PROJECT] ads-governance-demo
+[ADS] Agent Development Specification
+[TASK_ID] TASK-20260321-003
+[OWNER_ROLE] AgentImplementer
+[TRACE_ID] TRACE-20260321-003
+[LOCKED_PATHS]
+- tools/toolset.json.example
+- docs/03-tools-and-mcp.md
+[FORBIDDEN_PATHS]
+- scripts/**
+[ACCEPTANCE]
+- `shared_release_gate` 条目明确包含人工审批说明
+- 工具文档说明高风险工具建议搭配 `human-agent-review`
+- shared-change-request 已由 `HumanOwner` 明确批准
+- `python3 scripts/validate_ads.py` 通过
+- `python3 scripts/ads_health_report.py` 可输出 request / qa 视角
+[RELATED_PATHS]
+- tools/toolset.json.example
+- docs/03-tools-and-mcp.md
+- .ai/patterns/human-agent-review.md
+[VERIFY]
+python3 scripts/validate_ads.py
+python3 scripts/ads_health_report.py
+[CONTEXT_FILES]
+- examples/case-task-human-review-release-gate.md (full task contract)
+- README_AGENT.md (repo root)
+- examples/case-handoff-human-review-release-gate.md (latest handoff)
+[HANDOFF_STATUS]
+高风险工具的人工审批说明已补齐，HumanOwner 已批准共享改动，等待 Integration 复核并记录最终 QA 结论。
+[MEMORY_REFS]
+- examples/case-memory-release-gate-risk.md
+[OUTPUT]
+- Implement or review only within LOCKED_PATHS
+- Summarize files changed + verification output

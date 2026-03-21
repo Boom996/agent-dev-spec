@@ -16,7 +16,7 @@
     {
       "tool_id": "shared_release_gate",
       "title": "共享发布闸口",
-      "description": "用于集成与发布前检查的示例高风险工具占位",
+      "description": "用于集成与发布前检查的示例高风险工具占位；配置变更前需 HumanOwner review",
       "owner": "integration",
       "risk_level": "high",
       "version": "1.0.0",

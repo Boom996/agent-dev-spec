@@ -37,6 +37,12 @@
 - `risk_level`
 - `version`
 
+对于 `risk_level=high` 的工具，建议额外配套：
+
+- `human-agent-review` 这类人工审批 pattern
+- `shared-change-request` 批准记录
+- 在 handoff / QA 中留下复核证据
+
 先不要一开始就把 `toolset` 推向完整 registry；项目级模板阶段以“可读、可校验、可追责”为主。
 
 ## 校验与防漂移

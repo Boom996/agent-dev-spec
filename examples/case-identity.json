@@ -2,7 +2,7 @@
   "ads_version": "1.0",
   "project_name": "demo-ui-app",
   "vision_one_liner": "示例：完成 Button 组件、共享契约与集成闸口的最小协作闭环",
-  "default_roles": ["Architect", "Frontend", "Backend", "Integration"],
+  "default_roles": ["Architect", "Frontend", "Backend", "Integration", "HumanOwner", "Reviewer", "AgentImplementer"],
   "default_team_patterns": ["frontend-backend-integration", "human-agent-review"],
   "constraints": [
     "使用项目既有 Tailwind 主题 token",
