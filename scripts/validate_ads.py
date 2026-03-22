@@ -153,6 +153,14 @@ def validate_task(path: Path) -> list[str]:
     elif "stale_after" not in freshness:
         errors.append("missing `stale_after` in freshness section")
 
+    # Phase 1：coordination_model 为可选字段；有值时校验枚举范围
+    coordination_model = strip_code(extract_table_value(text, "coordination_model"))
+    if coordination_model and coordination_model not in VALID_COORDINATION_MODELS:
+        errors.append(
+            f"`coordination_model` must be one of {sorted(VALID_COORDINATION_MODELS)}, "
+            f"got '{coordination_model}'"
+        )
+
     return errors
 
 
@@ -367,6 +375,7 @@ REQUIRED_CONSTITUTION_SECTIONS = [
 
 VALID_HANDOFF_STATUSES = {"DONE", "DONE_WITH_CONCERNS", "NEEDS_CONTEXT", "BLOCKED", "pending_resume"}
 VALID_SPEC_UPDATE_STATUSES = {"not_started", "in_progress", "updated", "not_applicable"}
+VALID_COORDINATION_MODELS = {"direct", "orchestrated", "peer-parallel"}
 
 
 def validate_constitution(repo_root: Path) -> list[str]:

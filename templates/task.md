@@ -13,6 +13,8 @@
 | **team_pattern_id** | （可选）例如 `frontend-backend-integration` |
 | **approval_owner** | （可选）批准人或批准角色 |
 | **allowed_agents** | `[]` 或允许参与的 Agent / 客户端标识 |
+| **parent_change_id** | （可选）关联的 change proposal ID，如 `change-20260322-001` |
+| **coordination_model** | （可选）`direct` \| `orchestrated` \| `peer-parallel` |
 | **trace_id** | `TRACE-YYYYMMDD-001` |
 | **updated_at** | ISO8601 |
 

@@ -223,3 +223,125 @@ class TestHandoffPhase1Fields:
         finally:
             validate_ads.REPO_ROOT = original
         assert any("spec_update_status" in e for e in errors)
+
+
+class TestTaskPhase1Fields:
+    """Tests for Phase 1 new task fields: coordination_model."""
+
+    def test_invalid_coordination_model_returns_error(self, tmp_ads_repo):
+        content = """\
+            # 任务：测试任务
+
+            ## 元数据
+
+            | 字段 | 值 |
+            |------|-----|
+            | **task_id** | `TASK-20260322-001` |
+            | **owner_role** | Developer |
+            | **owner** | test |
+            | **priority** | High |
+            | **deps** | `[]` |
+            | **handoff_to** | Integration |
+            | **team_pattern_id** | |
+            | **approval_owner** | HumanOwner |
+            | **allowed_agents** | `[]` |
+            | **trace_id** | TRACE-001 |
+            | **updated_at** | 2026-03-22T10:00:00+08:00 |
+            | **coordination_model** | invalid-value |
+
+            ## 单写者范围
+
+            - **locked_paths**（本任务周期内仅主责可改）：
+              - `src/` — 说明
+            - **forbidden_paths**（禁止改动）：
+              - `.agent/` — 说明
+
+            ## 共享改动升级（可选）
+
+            无
+
+            ## 背景与目标
+
+            测试任务
+
+            ## 验收标准（可勾选）
+
+            - [ ] 测试通过
+
+            ## 相关路径
+
+            | 路径 | 说明 |
+            |------|------|
+            | `src/` | 源码 |
+
+            ## Memory refs（可选）
+
+            无
+
+            ## 证据期望（完成时必须附上）
+
+            测试输出
+
+            ## Freshness
+
+            - **stale_after**：P7D
+            - **最后更新时间说明**：初始创建
+
+            **状态**：`backlog`
+        """
+        path = write_file(tmp_ads_repo, ".ai/tasks/active/TASK-001.md", content)
+        original = validate_ads.REPO_ROOT
+        validate_ads.REPO_ROOT = tmp_ads_repo
+        try:
+            errors = validate_ads.validate_task(path)
+        finally:
+            validate_ads.REPO_ROOT = original
+        assert any("coordination_model" in e for e in errors)
+
+    def test_valid_coordination_model_passes(self, tmp_ads_repo):
+        for model in ["direct", "orchestrated", "peer-parallel"]:
+            content = (
+                "# 任务：测试任务\n\n"
+                "## 元数据\n\n"
+                "| 字段 | 值 |\n"
+                "|------|-----|\n"
+                "| **task_id** | `TASK-20260322-001` |\n"
+                "| **owner_role** | Developer |\n"
+                "| **owner** | test |\n"
+                "| **priority** | High |\n"
+                "| **deps** | `[]` |\n"
+                "| **handoff_to** | Integration |\n"
+                "| **team_pattern_id** | |\n"
+                "| **approval_owner** | HumanOwner |\n"
+                "| **allowed_agents** | `[]` |\n"
+                "| **trace_id** | TRACE-001 |\n"
+                "| **updated_at** | 2026-03-22T10:00:00+08:00 |\n"
+                f"| **coordination_model** | {model} |\n\n"
+                "## 单写者范围\n\n"
+                "- **locked_paths**（本任务周期内仅主责可改）：\n"
+                "  - `src/` — 说明\n"
+                "- **forbidden_paths**（禁止改动）：\n"
+                "  - `.agent/` — 说明\n\n"
+                "## 共享改动升级（可选）\n\n无\n\n"
+                "## 背景与目标\n\n测试\n\n"
+                "## 验收标准（可勾选）\n\n- [ ] 通过\n\n"
+                "## 相关路径\n\n"
+                "| 路径 | 说明 |\n|------|------|\n| `src/` | 源码 |\n\n"
+                "## Memory refs（可选）\n\n无\n\n"
+                "## 证据期望（完成时必须附上）\n\n测试输出\n\n"
+                "## Freshness\n\n"
+                "- **stale_after**：P7D\n"
+                "- **最后更新时间说明**：初始创建\n\n"
+                "**状态**：`backlog`\n"
+            )
+            path = write_file(
+                tmp_ads_repo, f".ai/tasks/active/TASK-{model}.md", content
+            )
+            original = validate_ads.REPO_ROOT
+            validate_ads.REPO_ROOT = tmp_ads_repo
+            try:
+                errors = validate_ads.validate_task(path)
+            finally:
+                validate_ads.REPO_ROOT = original
+            coord_errors = [e for e in errors if "coordination_model" in e]
+            assert coord_errors == [], f"model={model} got errors: {coord_errors}"
