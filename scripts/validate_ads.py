@@ -245,6 +245,15 @@ def validate_handoff(path: Path) -> list[str]:
             f"`spec_update_status` must be one of {sorted(VALID_SPEC_UPDATE_STATUSES)}, got '{spec_update_status}'"
         )
 
+    # Phase 3: 声明 team_pattern_id 的 handoff 必须包含 spec_compliance 阶段证据
+    team_pattern_id = strip_code(extract_table_value(text, "team_pattern_id"))
+    if team_pattern_id:
+        evidence = find_section(text, "Evidence expectation")
+        if "spec_compliance" not in evidence:
+            errors.append(
+                "handoff with `team_pattern_id` must include a `spec_compliance` evidence row"
+            )
+
     return errors
 
 

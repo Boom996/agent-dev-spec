@@ -125,3 +125,84 @@ class TestSpecDeltaValidation:
         monkeypatch.setattr(validate_ads, "REPO_ROOT", tmp_ads_repo)
         errors = validate_ads.validate_spec_delta(path)
         assert errors == []
+
+
+# --- Minimal valid handoff helpers ---
+MINIMAL_HANDOFF_NO_PATTERN = """\
+    # ADS Handoff — `TASK-20260322-001`
+
+    ## Metadata
+
+    | 字段 | 值 |
+    |------|-----|
+    | **From** | Backend |
+    | **To** | Integration |
+    | **task_id** | `TASK-20260322-001` |
+    | **Priority** | High |
+    | **Timestamp** | `2026-03-22T10:00:00+08:00` |
+    | **trace_id** | `TRACE-20260322-001` |
+    | **updated_at** | `2026-03-22T10:00:00+08:00` |
+    | **stale_after** | `P7D` |
+
+    ## Context
+
+    **当前状态**：已完成
+
+    **相关路径**：
+
+    | 路径 | 内容说明 |
+    |------|----------|
+    | `src/` | 主要代码 |
+
+    ## Memory refs（可选）
+
+    无
+
+    ## Deliverable request
+
+    **需要什么**：集成测试
+
+    **验收标准**（可勾选）：
+
+    - [ ] 测试通过
+
+    ## Evidence expectation
+
+    **已附证据**：
+
+    | evidence_item | executed_by | executed_at | result | artifact_paths | review_status |
+    |---------------|-------------|-------------|--------|----------------|---------------|
+    | `build` | backend | 2026-03-22T10:00:00+08:00 | pass | | pending |
+
+    ## Approval
+
+    **approval_owner**：tech-lead
+    **approval_status**：`pending`
+"""
+
+MINIMAL_HANDOFF_WITH_PATTERN = MINIMAL_HANDOFF_NO_PATTERN.replace(
+    "| **stale_after** | `P7D` |",
+    "| **stale_after** | `P7D` |\n    | **team_pattern_id** | `frontend-backend-integration` |"
+)
+
+MINIMAL_HANDOFF_WITH_PATTERN_AND_SPEC_COMPLIANCE = MINIMAL_HANDOFF_WITH_PATTERN.replace(
+    "| `build` | backend | 2026-03-22T10:00:00+08:00 | pass | | pending |",
+    "| `spec_compliance: all criteria met` | qa-agent | 2026-03-22T10:00:00+08:00 | pass | | reviewed |\n    | `build` | backend | 2026-03-22T10:00:00+08:00 | pass | | pending |"
+)
+
+
+class TestHandoffPhase3:
+    def test_handoff_with_team_pattern_missing_spec_compliance_returns_error(self, tmp_ads_repo):
+        path = write_file(tmp_ads_repo, "handoff.md", MINIMAL_HANDOFF_WITH_PATTERN)
+        errors = validate_ads.validate_handoff(path)
+        assert any("spec_compliance" in e for e in errors)
+
+    def test_handoff_with_team_pattern_and_spec_compliance_ok(self, tmp_ads_repo):
+        path = write_file(tmp_ads_repo, "handoff.md", MINIMAL_HANDOFF_WITH_PATTERN_AND_SPEC_COMPLIANCE)
+        errors = validate_ads.validate_handoff(path)
+        assert not any("spec_compliance" in e for e in errors)
+
+    def test_handoff_without_team_pattern_no_spec_compliance_required(self, tmp_ads_repo):
+        path = write_file(tmp_ads_repo, "handoff.md", MINIMAL_HANDOFF_NO_PATTERN)
+        errors = validate_ads.validate_handoff(path)
+        assert not any("spec_compliance" in e for e in errors)

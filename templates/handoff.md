@@ -17,6 +17,7 @@
 | **handoff_status** | `DONE` \| `DONE_WITH_CONCERNS` \| `NEEDS_CONTEXT` \| `BLOCKED` \| `pending_resume` |
 | **blocked_reason** | （仅 NEEDS_CONTEXT / BLOCKED 时填写，说明阻断原因或缺失信息） |
 | **spec_update_status** | `not_started` \| `in_progress` \| `updated` \| `not_applicable` |
+| **team_pattern_id** | （可选）关联的团队协作模式 |
 
 ## Context
 
