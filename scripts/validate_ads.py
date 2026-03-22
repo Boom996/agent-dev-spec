@@ -344,6 +344,29 @@ def validate_qa_fail(path: Path) -> list[str]:
     return errors
 
 
+REQUIRED_CONSTITUTION_SECTIONS = [
+    "Mission",
+    "Non-Negotiable Principles",
+    "Role Definitions",
+    "Agent Governance",
+]
+
+
+def validate_constitution(repo_root: Path) -> list[str]:
+    """Validate .agent/constitution.md exists and has required non-empty sections."""
+    constitution_path = repo_root / ".agent" / "constitution.md"
+    if not constitution_path.exists():
+        return ["constitution.md not found at .agent/constitution.md"]
+
+    text = read_text(constitution_path)
+    errors: list[str] = []
+    for section in REQUIRED_CONSTITUTION_SECTIONS:
+        content = find_section(text, section)
+        if not content.strip():
+            errors.append(f"constitution.md: section '{section}' is missing or empty")
+    return errors
+
+
 def validate_pattern(path: Path) -> list[str]:
     text = read_text(path)
     errors: list[str] = []
