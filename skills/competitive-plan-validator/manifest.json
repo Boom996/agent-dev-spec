@@ -1,8 +1,8 @@
 {
-  "tool_id": "competitive_plan_validator",
+  "tool_id": "competitive-plan-validator",
   "name": "competitive-plan-validator",
-  "version": "1.0.0",
-  "description": "对产品方案做外部竞品扫描与内部压力测试，输出竞品记录、分析报告和产品增强建议。",
+  "version": "1.1.0",
+  "description": "对产品方案做当前竞品扫描与内部模拟分析，输出扫描记录、分析报告和产品增强建议。",
   "entry": {
     "type": "script",
     "path": "./scripts/init_competitive_validation_run.py",
@@ -22,6 +22,10 @@
       "source": {
         "type": "string",
         "description": "被分析方案的来源说明"
+      },
+      "date": {
+        "type": "string",
+        "description": "可选，指定输出文件中使用的绝对日期，例如 2026-03-21"
       }
     },
     "required": ["title"]

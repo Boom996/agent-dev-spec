@@ -74,6 +74,19 @@ class QaRecord:
     timestamp: str
 
 
+@dataclass
+class PatternHealth:
+    pattern_id: str
+    task_count: int = 0
+    missing_handoff: int = 0
+    missing_evidence: int = 0
+    pending_approvals: int = 0
+    missing_qa: int = 0
+    failed_qas: int = 0
+    pending_requests: int = 0
+    rejected_requests: int = 0
+
+
 def read_text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
@@ -262,6 +275,7 @@ def build_report(
     now: datetime,
 ) -> str:
     handoff_by_task = {record.task_id: record for record in handoffs}
+    task_by_id = {task.task_id: task for task in tasks}
     missing_handoff = [task for task in tasks if task.task_id not in handoff_by_task]
     missing_evidence = [
         task for task in tasks
@@ -287,6 +301,30 @@ def build_report(
     missing_qa = [task for task in tasks if task.task_id not in qa_by_task]
     failed_qas = [qa for qa in qas if qa.result == "fail"]
     passed_qas = [qa for qa in qas if qa.result == "pass"]
+    pattern_health: dict[str, PatternHealth] = {}
+
+    def get_pattern_health(task: TaskRecord | None) -> PatternHealth:
+        pattern_id = task.team_pattern_id if task and task.team_pattern_id else "unpatterned"
+        if pattern_id not in pattern_health:
+            pattern_health[pattern_id] = PatternHealth(pattern_id=pattern_id)
+        return pattern_health[pattern_id]
+
+    for task in tasks:
+        get_pattern_health(task).task_count += 1
+    for task in missing_handoff:
+        get_pattern_health(task).missing_handoff += 1
+    for task in missing_evidence:
+        get_pattern_health(task).missing_evidence += 1
+    for task in pending_approvals:
+        get_pattern_health(task).pending_approvals += 1
+    for task in missing_qa:
+        get_pattern_health(task).missing_qa += 1
+    for qa in failed_qas:
+        get_pattern_health(task_by_id.get(qa.task_id)).failed_qas += 1
+    for request in pending_requests:
+        get_pattern_health(task_by_id.get(request.task_id)).pending_requests += 1
+    for request in rejected_requests:
+        get_pattern_health(task_by_id.get(request.task_id)).rejected_requests += 1
 
     lines = [
         "# ADS Health Report",
@@ -399,6 +437,30 @@ def build_report(
             lines.append(f"- {task.task_id} -> {task.team_pattern_id}")
     if not any(task.team_pattern_id for task in tasks):
         lines.append("- none declared")
+
+    lines.append("")
+    lines.append("## Team Pattern Health")
+    for pattern_id in sorted(pattern_health):
+        health = pattern_health[pattern_id]
+        blockers = []
+        if health.missing_handoff:
+            blockers.append(f"missing_handoff={health.missing_handoff}")
+        if health.missing_evidence:
+            blockers.append(f"missing_evidence={health.missing_evidence}")
+        if health.pending_approvals:
+            blockers.append(f"pending_approvals={health.pending_approvals}")
+        if health.pending_requests:
+            blockers.append(f"pending_requests={health.pending_requests}")
+        if health.rejected_requests:
+            blockers.append(f"rejected_requests={health.rejected_requests}")
+        if health.missing_qa:
+            blockers.append(f"missing_qa={health.missing_qa}")
+        if health.failed_qas:
+            blockers.append(f"failed_qas={health.failed_qas}")
+        blocker_text = ", ".join(blockers) if blockers else "clear"
+        lines.append(f"- {pattern_id}: tasks={health.task_count}, blockers={blocker_text}")
+    if not pattern_health:
+        lines.append("- none")
 
     lines.append("")
     lines.append("## High Risk Tools")

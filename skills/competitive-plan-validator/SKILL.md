@@ -1,19 +1,19 @@
 ---
 name: competitive-plan-validator
-description: Combine current external competitor research with internal scenario simulation to evaluate a product plan, expand differentiators, and turn competitor weaknesses into concrete product improvements. Use when a user asks for competitor analysis, market comparison, positioning pressure tests, or wants to upgrade a PRD, framework, roadmap, or product concept against current products.
+description: Combine current external competitor research with internal scenario simulation to evaluate a product plan, expand differentiators, and turn competitor weaknesses into concrete product improvements. Use when a user asks for competitor analysis, market comparison, positioning pressure tests, or wants to upgrade a PRD, framework, roadmap, strategy memo, or product concept against current products.
 ---
 
 # Competitive Plan Validator
 
-Use this skill when the task is not only "this product works or not", but also "how does it look against the current market, what advantages should we claim harder, and what competitor strengths should we absorb into the roadmap".
+Use this skill when the task is not only "does this product plan work", but also "how does it compare with the current market, what strengths should we claim more clearly, and what competitor tradeoffs should we turn into roadmap moves".
 
 This skill combines two lenses:
 
 - internal simulation: pressure-test the plan in realistic workflows, especially human plus agent collaboration
 - external comparison: search current competitors and adjacent products, extract validated capabilities, then convert their gaps and strengths into concrete changes for your product
 
-Load [references/competitor-lenses.md](references/competitor-lenses.md) when choosing competitors and dimensions.  
-Load [references/deliverables.md](references/deliverables.md) when structuring outputs and deciding how much evidence to include.
+Load [references/competitor-lenses.md](references/competitor-lenses.md) when choosing competitor buckets and comparison dimensions.  
+Load [references/deliverables.md](references/deliverables.md) when structuring outputs, naming files, and deciding how much evidence to include.
 
 ## Required outputs
 
@@ -23,7 +23,7 @@ Produce three separate markdown files for each analysis wave:
 - a `...竞品分析报告.md` file with the synthesis: market position, expanded strengths, weaknesses, and competitor-informed recommendations
 - a `...产品增强建议.md` file with the concrete backlog or framework changes to make next
 
-Default to one triplet per product concept. Split into multiple triplets only when the product has clearly different markets or user shapes.
+Default to one triplet per product concept. Split into multiple triplets only when the product has clearly different markets, buyers, or workflows.
 
 ## Workflow
 
@@ -128,6 +128,8 @@ When the plan includes AI collaboration, automation, orchestration, copilots, or
 - Use absolute dates such as `2026-03-21`.
 - Distinguish facts from inference.
 - Prefer concrete tradeoffs over generic praise.
+- If the user already has an internal simulation report, synthesize it instead of repeating the same simulation.
+- If competitor findings point to multiple product lines, keep one report per line instead of mixing them.
 
 ## File creation
 
@@ -146,3 +148,8 @@ This creates:
 - `ADS竞品对标产品增强建议.md`
 
 Fill those files with the scan log, synthesis, and implementation suggestions.
+
+Recommended arguments:
+
+- `--source` for the plan path or source description
+- `--date` when you need the scaffold files to match a specific research date

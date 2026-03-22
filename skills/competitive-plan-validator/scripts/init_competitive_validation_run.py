@@ -100,7 +100,17 @@ def parse_args() -> argparse.Namespace:
         default="[请替换为产品方案路径](PATH)",
         help="Markdown text used in the source document field.",
     )
+    parser.add_argument(
+        "--date",
+        help="Optional absolute date (YYYY-MM-DD) written into the scaffold files.",
+    )
     return parser.parse_args()
+
+
+def resolve_date(raw: str | None) -> str:
+    if not raw:
+        return date.today().isoformat()
+    return date.fromisoformat(raw).isoformat()
 
 
 def write_if_missing(path: Path, content: str) -> None:
@@ -114,7 +124,7 @@ def main() -> int:
     output_dir = Path(args.output_dir).expanduser().resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    today = date.today().isoformat()
+    today = resolve_date(args.date)
     base = args.title.strip()
     scan_name = f"{base}竞品扫描记录.md"
     report_name = f"{base}竞品分析报告.md"
@@ -134,7 +144,7 @@ def main() -> int:
             title=base,
             today=today,
             source=args.source,
-            scan_link=scan_path.as_posix(),
+            scan_link=scan_name,
         ),
     )
     write_if_missing(
@@ -143,7 +153,7 @@ def main() -> int:
             title=base,
             today=today,
             source=args.source,
-            report_link=report_path.as_posix(),
+            report_link=report_name,
         ),
     )
 

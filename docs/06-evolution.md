@@ -112,6 +112,7 @@ ADS 最初是一个偏文档和模板的规范仓库。随着本仓库逐步补�
 - 增加更多 team pattern
 - 增加更贴近 Integration 的报告
 - 让 knowledge pack 支持多种输出模式
+- 让 health report 支持按 team pattern 聚合阻塞信号
 
 ### 3. 最后才做“更强”
 
