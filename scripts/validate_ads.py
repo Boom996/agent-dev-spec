@@ -28,6 +28,8 @@ VALID_CHANGE_STATUSES = {"pending_approval", "approved", "executing", "in_progre
 VALID_INNOVATION_STATUSES = {"proposed", "evaluating", "promoted", "deferred", "rejected"}
 VALID_INNOVATION_URGENCIES = {"low", "medium", "high"}
 INNOVATION_GLOBS = [".ai/innovations/**/*.md", "examples/case-innovation-brief.md"]
+VALID_SPEC_STATUSES = {"active", "deprecated", "draft"}
+SPEC_GLOBS = [".ai/specs/**/*.md", "examples/case-spec.md"]
 
 
 def is_iso8601ish(value: str) -> bool:
@@ -108,7 +110,16 @@ def detect_kind(path: Path) -> str | None:
         return "spec_delta"
     if text.startswith("# Innovation Brief"):
         return "innovation_brief"
+    if text.startswith("---") and "spec_id:" in text[:200]:
+        return "spec"
     return None
+
+
+def extract_frontmatter_value(text: str, key: str) -> str | None:
+    """Extract a scalar value from YAML frontmatter by key."""
+    pattern = rf"^{re.escape(key)}:\s*(.+)$"
+    match = re.search(pattern, text[:2000], flags=re.MULTILINE)
+    return match.group(1).strip() if match else None
 
 
 def validate_task(path: Path) -> list[str]:
@@ -612,6 +623,26 @@ def validate_innovation(path: Path) -> list[str]:
     return errors
 
 
+def validate_spec(path: Path) -> list[str]:
+    text = read_text(path)
+    errors: list[str] = []
+
+    for field in ["spec_id", "version", "status", "owned_by", "updated_at", "stale_after"]:
+        if not extract_frontmatter_value(text, field):
+            errors.append(f"missing frontmatter field `{field}`")
+
+    status = extract_frontmatter_value(text, "status")
+    if status and status not in VALID_SPEC_STATUSES:
+        errors.append(f"`status` must be one of {sorted(VALID_SPEC_STATUSES)}, got '{status}'")
+
+    for date_field in ("updated_at", "stale_after"):
+        val = extract_frontmatter_value(text, date_field)
+        if val and not re.match(r"^\d{4}-\d{2}-\d{2}$", val):
+            errors.append(f"`{date_field}` must be YYYY-MM-DD date, got '{val}'")
+
+    return errors
+
+
 def validate_toolset(path: Path) -> list[str]:
     errors: list[str] = []
     try:
@@ -661,6 +692,7 @@ def main() -> int:
         files.extend(discover_files(CHANGE_GLOBS))
         files.extend(discover_files(SPEC_DELTA_GLOBS))
         files.extend(discover_files(INNOVATION_GLOBS))
+        files.extend(discover_files(SPEC_GLOBS))
 
     failures = 0
 
@@ -702,6 +734,8 @@ def main() -> int:
             errors = validate_spec_delta(path)
         elif kind == "innovation_brief":
             errors = validate_innovation(path)
+        elif kind == "spec":
+            errors = validate_spec(path)
         else:
             errors = validate_pattern(path)
         if errors:
