@@ -14,6 +14,9 @@
 | **trace_id** | |
 | **updated_at** | ISO8601 |
 | **stale_after** | `P2D` / `P7D` / 团队自定义 |
+| **handoff_status** | `DONE` \| `DONE_WITH_CONCERNS` \| `NEEDS_CONTEXT` \| `BLOCKED` |
+| **blocked_reason** | （仅 NEEDS_CONTEXT / BLOCKED 时填写，说明阻断原因或缺失信息） |
+| **spec_update_status** | `not_started` \| `in_progress` \| `updated` \| `not_applicable` |
 
 ## Context
 
@@ -45,6 +48,12 @@
 **参考资料**：spec、设计稿、Issue 链接
 
 ## Evidence expectation
+
+> **两阶段 Evidence 说明**（Phase 1 可选，Phase 3 后对声明 team_pattern_id 的任务强制）：
+> 在 Evidence expectation 的已附证据表格中，`evidence_item` 列可用以下 stage 前缀标注：
+> - `spec_compliance:` — spec 合规性验证（第一阶段）
+> - `code_quality:` — 代码质量验证（第二阶段）
+> - `sub_task_aggregation:` — orchestrated 模式子任务产物汇总
 
 **必须提供的证明**：（命令、日志路径、测试报告、截图）
 
