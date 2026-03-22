@@ -17,11 +17,12 @@ REQUEST_GLOBS = [".ai/requests/**/*.md", "examples/case-shared-change-request*.m
 QA_GLOBS = [".ai/qa/**/*.md", "examples/case-qa-*.md"]
 PATTERN_GLOBS = [".ai/patterns/*.md"]
 CHANGE_GLOBS = [".ai/changes/**/proposal.md", "examples/case-change-proposal/proposal.md"]
+SPEC_DELTA_GLOBS = [".ai/changes/**/spec-delta.md"]
 TOOLSET_PATHS = [REPO_ROOT / "tools" / "toolset.json", REPO_ROOT / "tools" / "toolset.json.example"]
 VALID_HANDOFF_STATUSES = {"DONE", "DONE_WITH_CONCERNS", "NEEDS_CONTEXT", "BLOCKED", "pending_resume"}
 VALID_SPEC_UPDATE_STATUSES = {"not_started", "in_progress", "updated", "not_applicable"}
 VALID_COORDINATION_MODELS = {"direct", "orchestrated", "peer-parallel"}
-VALID_CHANGE_STATUSES = {"pending_approval", "approved", "in_progress", "done", "cancelled"}
+VALID_CHANGE_STATUSES = {"pending_approval", "approved", "executing", "in_progress", "done", "cancelled"}
 
 
 def is_iso8601ish(value: str) -> bool:
@@ -98,6 +99,8 @@ def detect_kind(path: Path) -> str | None:
         return "pattern"
     if text.startswith("# Change Proposal"):
         return "change_proposal"
+    if text.startswith("# Spec Delta"):
+        return "spec_delta"
     return None
 
 
@@ -484,6 +487,15 @@ def validate_change_proposal(path: Path) -> list[str]:
             f"`status` must be one of {sorted(VALID_CHANGE_STATUSES)}, got '{status}'"
         )
 
+    # Phase 3: executing/in_progress 时必须有 human_checkpoint: design_approved
+    if status in {"executing", "in_progress"}:
+        human_checkpoint = strip_code(extract_table_value(text, "human_checkpoint"))
+        if human_checkpoint != "design_approved":
+            errors.append(
+                "change proposal with status 'executing' or 'in_progress' must have "
+                "`human_checkpoint: design_approved`"
+            )
+
     if not find_section(text, "What & Why"):
         errors.append("missing `What & Why` section")
 
@@ -494,6 +506,42 @@ def validate_change_proposal(path: Path) -> list[str]:
     if not find_section(text, "Impact"):
         errors.append("missing `Impact` section")
 
+    return errors
+
+
+def validate_spec_delta(path: Path) -> list[str]:
+    """Validate that spec file paths listed in spec-delta table exist."""
+    text = read_text(path)
+    errors: list[str] = []
+    in_table = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|"):
+            if in_table:
+                break
+            continue
+        # Detect table header row
+        if "Spec 文件" in stripped or "Spec " in stripped:
+            in_table = True
+            continue
+        # Skip separator rows
+        if re.match(r"^\|[-| ]+\|$", stripped):
+            continue
+        if not in_table:
+            continue
+        # Parse first column
+        parts = [p.strip() for p in stripped.split("|")[1:-1]]
+        if not parts:
+            continue
+        raw = strip_code(parts[0]) or ""
+        if not raw:
+            continue
+        # Skip placeholder paths
+        if "..." in raw or "<" in raw or ">" in raw or "placeholder" in raw:
+            continue
+        spec_path = REPO_ROOT / raw
+        if not spec_path.exists():
+            errors.append(f"spec-delta references non-existent spec file: {raw}")
     return errors
 
 
@@ -544,6 +592,7 @@ def main() -> int:
         files.extend(discover_files(QA_GLOBS))
         files.extend(discover_files(PATTERN_GLOBS))
         files.extend(discover_files(CHANGE_GLOBS))
+        files.extend(discover_files(SPEC_DELTA_GLOBS))
 
     failures = 0
 
@@ -581,6 +630,8 @@ def main() -> int:
             errors = validate_qa_fail(path)
         elif kind == "change_proposal":
             errors = validate_change_proposal(path)
+        elif kind == "spec_delta":
+            errors = validate_spec_delta(path)
         else:
             errors = validate_pattern(path)
         if errors:
