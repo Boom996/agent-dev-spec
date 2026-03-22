@@ -390,3 +390,22 @@ class TestTaskPhase1Fields:
                 validate_ads.REPO_ROOT = original
             coord_errors = [e for e in errors if "coordination_model" in e]
             assert coord_errors == [], f"model={model} got errors: {coord_errors}"
+
+
+class TestConstitutionIntegration:
+    """Test that validate_constitution() is callable and returns expected results."""
+
+    def test_main_warns_missing_constitution(self, tmp_ads_repo, capsys):
+        # validate_constitution 返回非空错误列表（constitution.md 不存在）
+        errors = validate_ads.validate_constitution(tmp_ads_repo)
+        assert len(errors) > 0
+        assert "constitution.md" in errors[0]
+
+    def test_main_passes_with_valid_constitution(self, tmp_ads_repo):
+        (tmp_ads_repo / ".agent" / "constitution.md").write_text(
+            "# C\n\n## Mission\nBuild.\n\n## Non-Negotiable Principles\n- X\n\n"
+            "## Role Definitions\n- Dev\n\n## Agent Governance\n- Human approves\n",
+            encoding="utf-8",
+        )
+        errors = validate_ads.validate_constitution(tmp_ads_repo)
+        assert errors == []

@@ -472,6 +472,16 @@ def main() -> int:
         files.extend(discover_files(QA_GLOBS))
         files.extend(discover_files(PATTERN_GLOBS))
 
+    # Phase 1：校验 constitution（始终针对 REPO_ROOT）
+    constitution_errors = validate_constitution(REPO_ROOT)
+    if constitution_errors:
+        failures += 1
+        print("[FAIL] constitution: .agent/constitution.md")
+        for error in constitution_errors:
+            print(f"  - {error}")
+    elif (REPO_ROOT / ".agent" / "constitution.md").exists():
+        print("[OK] constitution: .agent/constitution.md")
+
     files = sorted(set(files))
     if not files:
         print("No ADS markdown files found to validate.")
