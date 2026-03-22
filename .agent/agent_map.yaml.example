@@ -2,6 +2,8 @@
 # Agent Development Specification (ADS)
 
 version: 1
+# ADS Layer 6 宪法文件发现路径（各客户端适配层参考此路径）
+constitution_path: .agent/constitution.md
 
 clients:
   cursor:
