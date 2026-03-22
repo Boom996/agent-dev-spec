@@ -418,6 +418,17 @@ def validate_pattern(path: Path) -> list[str]:
     if updated_at and "ISO8601" not in updated_at and not is_iso8601ish(strip_code(updated_at) or ""):
         errors.append("`updated_at` is not ISO8601-like")
 
+    # Phase 2: coordination_model 为必填字段（team-pattern 须声明默认协调模式）
+    if not extract_table_value(text, "coordination_model"):
+        errors.append("missing metadata field `coordination_model`")
+    else:
+        cm = strip_code(extract_table_value(text, "coordination_model"))
+        if cm and cm not in VALID_COORDINATION_MODELS:
+            errors.append(
+                f"`coordination_model` must be one of {sorted(VALID_COORDINATION_MODELS)}, "
+                f"got '{cm}'"
+            )
+
     for title in [
         "Description",
         "Roles",

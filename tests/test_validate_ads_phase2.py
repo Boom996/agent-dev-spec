@@ -242,6 +242,171 @@ class TestTaskPhase2Validations:
         assert sub_errors == [], f"Unexpected Sub-Tasks Detail errors: {sub_errors}"
 
 
+MINIMAL_PATTERN_NO_CM = """\
+# Team Pattern
+
+## Metadata
+
+| 字段 | 值 |
+|------|-----|
+| **team_pattern_id** | `test-pattern` |
+| **version** | `1` |
+| **updated_at** | `2026-03-22T00:00:00Z` |
+
+## Description
+
+Test description.
+
+## Roles
+
+- `RoleA`
+
+## Entry Conditions
+
+- Condition one
+
+## Shared Context Scope
+
+Default scope.
+
+## Handoff Rules
+
+- Handoff rule one
+
+## Approval Flow
+
+Approval description.
+
+## Integration Gate
+
+Gate description.
+
+## State Model
+
+- `planned`
+- `done`
+"""
+
+MINIMAL_PATTERN_WITH_CM = """\
+# Team Pattern
+
+## Metadata
+
+| 字段 | 值 |
+|------|-----|
+| **team_pattern_id** | `test-pattern` |
+| **version** | `1` |
+| **updated_at** | `2026-03-22T00:00:00Z` |
+| **coordination_model** | `peer-parallel` |
+
+## Description
+
+Test description.
+
+## Roles
+
+- `RoleA`
+
+## Entry Conditions
+
+- Condition one
+
+## Shared Context Scope
+
+Default scope.
+
+## Handoff Rules
+
+- Handoff rule one
+
+## Approval Flow
+
+Approval description.
+
+## Integration Gate
+
+Gate description.
+
+## State Model
+
+- `planned`
+- `done`
+"""
+
+MINIMAL_PATTERN_INVALID_CM = """\
+# Team Pattern
+
+## Metadata
+
+| 字段 | 值 |
+|------|-----|
+| **team_pattern_id** | `test-pattern` |
+| **version** | `1` |
+| **updated_at** | `2026-03-22T00:00:00Z` |
+| **coordination_model** | `invalid-value` |
+
+## Description
+
+Test description.
+
+## Roles
+
+- `RoleA`
+
+## Entry Conditions
+
+- Condition one
+
+## Shared Context Scope
+
+Default scope.
+
+## Handoff Rules
+
+- Handoff rule one
+
+## Approval Flow
+
+Approval description.
+
+## Integration Gate
+
+Gate description.
+
+## State Model
+
+- `planned`
+- `done`
+"""
+
+
+class TestPatternPhase2Validations:
+    def test_pattern_missing_coordination_model_returns_error(self, tmp_ads_repo):
+        path = write_file(
+            tmp_ads_repo, ".ai/patterns/test-pattern.md", MINIMAL_PATTERN_NO_CM
+        )
+        errors = validate_ads.validate_pattern(path)
+        assert any("coordination_model" in e for e in errors), (
+            f"Expected coordination_model error, got: {errors}"
+        )
+
+    def test_pattern_with_coordination_model_ok(self, tmp_ads_repo):
+        path = write_file(
+            tmp_ads_repo, ".ai/patterns/test-pattern.md", MINIMAL_PATTERN_WITH_CM
+        )
+        errors = validate_ads.validate_pattern(path)
+        assert errors == [], f"Unexpected errors: {errors}"
+
+    def test_pattern_invalid_coordination_model_returns_error(self, tmp_ads_repo):
+        path = write_file(
+            tmp_ads_repo, ".ai/patterns/test-pattern.md", MINIMAL_PATTERN_INVALID_CM
+        )
+        errors = validate_ads.validate_pattern(path)
+        assert any("coordination_model" in e for e in errors), (
+            f"Expected coordination_model enum error, got: {errors}"
+        )
+
+
 class TestHasSpecDeltaEntry:
     def test_empty_text_returns_false(self):
         assert validate_ads.has_spec_delta_entry("") is False
