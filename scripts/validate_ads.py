@@ -23,6 +23,9 @@ VALID_HANDOFF_STATUSES = {"DONE", "DONE_WITH_CONCERNS", "NEEDS_CONTEXT", "BLOCKE
 VALID_SPEC_UPDATE_STATUSES = {"not_started", "in_progress", "updated", "not_applicable"}
 VALID_COORDINATION_MODELS = {"direct", "orchestrated", "peer-parallel"}
 VALID_CHANGE_STATUSES = {"pending_approval", "approved", "executing", "in_progress", "done", "cancelled"}
+VALID_INNOVATION_STATUSES = {"proposed", "evaluating", "promoted", "deferred", "rejected"}
+VALID_INNOVATION_URGENCIES = {"low", "medium", "high"}
+INNOVATION_GLOBS = [".ai/innovations/**/*.md", "examples/case-innovation-brief.md"]
 
 
 def is_iso8601ish(value: str) -> bool:
@@ -101,6 +104,8 @@ def detect_kind(path: Path) -> str | None:
         return "change_proposal"
     if text.startswith("# Spec Delta"):
         return "spec_delta"
+    if text.startswith("# Innovation Brief"):
+        return "innovation_brief"
     return None
 
 
@@ -554,6 +559,36 @@ def validate_spec_delta(path: Path) -> list[str]:
     return errors
 
 
+def validate_innovation(path: Path) -> list[str]:
+    text = read_text(path)
+    errors: list[str] = []
+
+    for field in ["innovation_id", "title", "submitted_by", "submitted_at", "status", "urgency"]:
+        if not extract_table_value(text, field):
+            errors.append(f"missing metadata field `{field}`")
+
+    submitted_at = extract_table_value(text, "submitted_at")
+    if submitted_at and "ISO8601" not in submitted_at and not is_iso8601ish(strip_code(submitted_at) or ""):
+        errors.append("`submitted_at` is not ISO8601-like")
+
+    status = strip_code(extract_table_value(text, "status"))
+    if status and status not in VALID_INNOVATION_STATUSES:
+        errors.append(
+            f"`status` must be one of {sorted(VALID_INNOVATION_STATUSES)}, got '{status}'"
+        )
+
+    urgency = strip_code(extract_table_value(text, "urgency"))
+    if urgency and urgency not in VALID_INNOVATION_URGENCIES:
+        errors.append(
+            f"`urgency` must be one of {sorted(VALID_INNOVATION_URGENCIES)}, got '{urgency}'"
+        )
+
+    if not find_section(text, "想法摘要"):
+        errors.append("missing `想法摘要` section")
+
+    return errors
+
+
 def validate_toolset(path: Path) -> list[str]:
     errors: list[str] = []
     try:
@@ -602,6 +637,7 @@ def main() -> int:
         files.extend(discover_files(PATTERN_GLOBS))
         files.extend(discover_files(CHANGE_GLOBS))
         files.extend(discover_files(SPEC_DELTA_GLOBS))
+        files.extend(discover_files(INNOVATION_GLOBS))
 
     failures = 0
 
@@ -641,6 +677,8 @@ def main() -> int:
             errors = validate_change_proposal(path)
         elif kind == "spec_delta":
             errors = validate_spec_delta(path)
+        elif kind == "innovation_brief":
+            errors = validate_innovation(path)
         else:
             errors = validate_pattern(path)
         if errors:

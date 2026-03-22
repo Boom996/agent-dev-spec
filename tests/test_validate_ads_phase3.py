@@ -206,3 +206,72 @@ class TestHandoffPhase3:
         path = write_file(tmp_ads_repo, "handoff.md", MINIMAL_HANDOFF_NO_PATTERN)
         errors = validate_ads.validate_handoff(path)
         assert not any("spec_compliance" in e for e in errors)
+
+
+MINIMAL_INNOVATION = """\
+    # Innovation Brief — `INV-20260322-001`
+
+    ## Metadata
+
+    | 字段 | 值 |
+    |------|-----|
+    | **innovation_id** | `INV-20260322-001` |
+    | **title** | 用 Redis 替代内存缓存以支持水平扩展 |
+    | **submitted_by** | `developer-agent` |
+    | **submitted_at** | `2026-03-22T10:00:00+08:00` |
+    | **status** | `proposed` |
+    | **urgency** | `low` |
+
+    ## 想法摘要
+
+    发现当前内存缓存方案在水平扩展时存在数据不一致问题，建议迁移到 Redis 解决此问题。
+
+    ## 触发背景
+
+    在执行 TASK-20260322-001 时发现负载测试失败。
+
+    ## 提交者的初步判断
+
+    中等优先级，不阻断当前任务，建议下个 sprint 评估。
+"""
+
+
+class TestInnovationBriefValidation:
+    def test_valid_innovation_has_no_errors(self, tmp_ads_repo):
+        path = write_file(tmp_ads_repo, "innovation.md", MINIMAL_INNOVATION)
+        errors = validate_ads.validate_innovation(path)
+        assert errors == []
+
+    def test_missing_innovation_id_returns_error(self, tmp_ads_repo):
+        content = MINIMAL_INNOVATION.replace("| **innovation_id** | `INV-20260322-001` |\n    ", "")
+        path = write_file(tmp_ads_repo, "innovation.md", content)
+        errors = validate_ads.validate_innovation(path)
+        assert any("innovation_id" in e for e in errors)
+
+    def test_missing_submitted_at_returns_error(self, tmp_ads_repo):
+        content = MINIMAL_INNOVATION.replace("| **submitted_at** | `2026-03-22T10:00:00+08:00` |\n    ", "")
+        path = write_file(tmp_ads_repo, "innovation.md", content)
+        errors = validate_ads.validate_innovation(path)
+        assert any("submitted_at" in e for e in errors)
+
+    def test_invalid_status_returns_error(self, tmp_ads_repo):
+        content = MINIMAL_INNOVATION.replace("| **status** | `proposed` |",
+                                              "| **status** | `invalid-status` |")
+        path = write_file(tmp_ads_repo, "innovation.md", content)
+        errors = validate_ads.validate_innovation(path)
+        assert any("status" in e for e in errors)
+
+    def test_missing_summary_section_returns_error(self, tmp_ads_repo):
+        # Remove the 想法摘要 section
+        content = MINIMAL_INNOVATION.replace("## 想法摘要\n\n    发现当前内存缓存方案在水平扩展时存在数据不一致问题，建议迁移到 Redis 解决此问题。\n\n    ", "")
+        path = write_file(tmp_ads_repo, "innovation.md", content)
+        errors = validate_ads.validate_innovation(path)
+        assert any("想法摘要" in e for e in errors)
+
+
+class TestInnovationIntegration:
+    def test_valid_example_innovation_has_no_errors(self):
+        example_path = REPO_ROOT / "examples" / "case-innovation-brief.md"
+        assert example_path.exists(), f"Example file not found: {example_path}"
+        errors = validate_ads.validate_innovation(example_path)
+        assert errors == [], f"Unexpected errors: {errors}"
