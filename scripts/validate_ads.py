@@ -22,6 +22,8 @@ TOOLSET_PATHS = [REPO_ROOT / "tools" / "toolset.json", REPO_ROOT / "tools" / "to
 VALID_HANDOFF_STATUSES = {"DONE", "DONE_WITH_CONCERNS", "NEEDS_CONTEXT", "BLOCKED", "pending_resume"}
 VALID_SPEC_UPDATE_STATUSES = {"not_started", "in_progress", "updated", "not_applicable"}
 VALID_COORDINATION_MODELS = {"direct", "orchestrated", "peer-parallel"}
+VALID_AUTONOMY_LEVELS = {"supervised", "semi-autonomous", "autonomous"}
+VALID_REVIEW_CADENCES = {"daily", "per_task", "manual"}
 VALID_CHANGE_STATUSES = {"pending_approval", "approved", "executing", "in_progress", "done", "cancelled"}
 VALID_INNOVATION_STATUSES = {"proposed", "evaluating", "promoted", "deferred", "rejected"}
 VALID_INNOVATION_URGENCIES = {"low", "medium", "high"}
@@ -186,6 +188,19 @@ def validate_task(path: Path) -> list[str]:
     # Phase 2: orchestrated 任务必须有 Sub-Tasks Detail 节
     if coordination_model == "orchestrated" and not find_section(text, "Sub-Tasks Detail"):
         errors.append("orchestrated task must have a `## Sub-Tasks Detail` section")
+
+    # Phase 3: autonomy_level 可选字段
+    autonomy_level = strip_code(extract_table_value(text, "autonomy_level"))
+    if autonomy_level and autonomy_level not in VALID_AUTONOMY_LEVELS:
+        errors.append(
+            f"`autonomy_level` must be one of {sorted(VALID_AUTONOMY_LEVELS)}, "
+            f"got '{autonomy_level}'"
+        )
+
+    # Phase 3: token_budget 可选字段，必须为正整数字符串
+    token_budget = strip_code(extract_table_value(text, "token_budget"))
+    if token_budget and not re.match(r"^\d+$", token_budget):
+        errors.append("`token_budget` must be a positive integer string (e.g. `50000`)")
 
     return errors
 
@@ -464,6 +479,14 @@ def validate_pattern(path: Path) -> list[str]:
         errors.append("roles section must contain bullet items")
     if not extract_bullets(find_section(text, "State Model")):
         errors.append("state model must contain bullet items")
+
+    # Phase 3: review_cadence 可选字段
+    review_cadence = strip_code(extract_table_value(text, "review_cadence"))
+    if review_cadence and review_cadence not in VALID_REVIEW_CADENCES:
+        errors.append(
+            f"`review_cadence` must be one of {sorted(VALID_REVIEW_CADENCES)}, "
+            f"got '{review_cadence}'"
+        )
 
     return errors
 

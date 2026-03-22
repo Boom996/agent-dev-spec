@@ -10,6 +10,7 @@
 | **version** | `1` |
 | **updated_at** | `2026-03-21T00:00:00Z` |
 | **coordination_model** | `peer-parallel` |
+| **review_cadence** | `per_task` |
 
 ## Description
 

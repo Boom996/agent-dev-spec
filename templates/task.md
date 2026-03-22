@@ -15,6 +15,8 @@
 | **allowed_agents** | `[]` 或允许参与的 Agent / 客户端标识 |
 | **parent_change_id** | （可选）关联的 change proposal ID，如 `change-20260322-001` |
 | **coordination_model** | （可选）`direct` \| `orchestrated` \| `peer-parallel` |
+| **autonomy_level** | （可选）`supervised` \| `semi-autonomous` \| `autonomous` |
+| **token_budget** | （可选）预计 token 上限，正整数，如 `50000` |
 | **trace_id** | `TRACE-YYYYMMDD-001` |
 | **updated_at** | ISO8601 |
 
