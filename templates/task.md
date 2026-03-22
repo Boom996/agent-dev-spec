@@ -61,6 +61,14 @@
 - **stale_after**（可选）：`P2D` / `P7D` / 团队自定义
 - **最后更新时间说明**：（一句话说明本次更新改了什么）
 
+## Sub-Tasks Detail
+
+> 仅 `coordination_model: orchestrated` 任务填写。`direct` 任务省略本节。
+
+| sub_task_id | 描述 | 负责角色 | 状态 |
+|-------------|------|---------|------|
+| `TASK-...` | ... | ... | pending / in_progress / done |
+
 ---
 
 **状态**：`backlog` | `in-progress` | `blocked` | `review` | `done`

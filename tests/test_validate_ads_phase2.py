@@ -141,6 +141,107 @@ class TestChangeProposalValidation:
         assert any("Impact" in e for e in errors)
 
 
+MINIMAL_TASK_BASE = (
+    "# 任务：测试任务\n\n"
+    "## 元数据\n\n"
+    "| 字段 | 值 |\n"
+    "|------|-----|\n"
+    "| **task_id** | `TASK-20260322-001` |\n"
+    "| **owner_role** | Developer |\n"
+    "| **priority** | High |\n"
+    "| **deps** | `[]` |\n"
+    "| **handoff_to** | |\n"
+    "| **team_pattern_id** | |\n"
+    "| **approval_owner** | |\n"
+    "| **allowed_agents** | `[]` |\n"
+    "| **trace_id** | TRACE-001 |\n"
+    "| **updated_at** | 2026-03-22T10:00:00+08:00 |\n\n"
+    "## 单写者范围\n\n"
+    "- **locked_paths**（本任务周期内仅主责可改）：\n"
+    "  - `src/` — 说明\n"
+    "- **forbidden_paths**（禁止改动）：\n"
+    "  - `.agent/` — 说明\n\n"
+    "## 共享改动升级（可选）\n\n无\n\n"
+    "## 背景与目标\n\n测试\n\n"
+    "## 验收标准（可勾选）\n\n- [ ] 通过\n\n"
+    "## 相关路径\n\n"
+    "| 路径 | 说明 |\n|------|------|\n| `src/` | 源码 |\n\n"
+    "## Memory refs（可选）\n\n无\n\n"
+    "## 证据期望（完成时必须附上）\n\n测试输出\n\n"
+    "## Freshness\n\n"
+    "- **stale_after**：P7D\n"
+    "- **最后更新时间说明**：初始创建\n\n"
+    "**状态**：`backlog`\n"
+)
+
+
+class TestTaskPhase2Validations:
+    def test_parent_change_id_missing_dir_returns_error(self, tmp_ads_repo, monkeypatch):
+        monkeypatch.setattr(validate_ads, "REPO_ROOT", tmp_ads_repo)
+        content = MINIMAL_TASK_BASE.replace(
+            "| **updated_at** | 2026-03-22T10:00:00+08:00 |\n",
+            "| **updated_at** | 2026-03-22T10:00:00+08:00 |\n"
+            "| **parent_change_id** | `change-20260322-001` |\n",
+        )
+        path = write_file(tmp_ads_repo, ".ai/tasks/active/TASK-p2-parent-missing.md", content)
+        errors = validate_ads.validate_task(path)
+        assert any("parent_change_id" in e for e in errors), f"Expected parent_change_id error, got: {errors}"
+
+    def test_parent_change_id_existing_dir_ok(self, tmp_ads_repo, monkeypatch):
+        monkeypatch.setattr(validate_ads, "REPO_ROOT", tmp_ads_repo)
+        (tmp_ads_repo / ".ai" / "changes" / "change-20260322-001").mkdir(parents=True, exist_ok=True)
+        content = MINIMAL_TASK_BASE.replace(
+            "| **updated_at** | 2026-03-22T10:00:00+08:00 |\n",
+            "| **updated_at** | 2026-03-22T10:00:00+08:00 |\n"
+            "| **parent_change_id** | `change-20260322-001` |\n",
+        )
+        path = write_file(tmp_ads_repo, ".ai/tasks/active/TASK-p2-parent-exists.md", content)
+        errors = validate_ads.validate_task(path)
+        parent_errors = [e for e in errors if "parent_change_id" in e]
+        assert parent_errors == [], f"Unexpected parent_change_id errors: {parent_errors}"
+
+    def test_orchestrated_task_missing_subtasks_section_returns_error(self, tmp_ads_repo, monkeypatch):
+        monkeypatch.setattr(validate_ads, "REPO_ROOT", tmp_ads_repo)
+        content = MINIMAL_TASK_BASE.replace(
+            "| **updated_at** | 2026-03-22T10:00:00+08:00 |\n",
+            "| **updated_at** | 2026-03-22T10:00:00+08:00 |\n"
+            "| **coordination_model** | `orchestrated` |\n",
+        )
+        path = write_file(tmp_ads_repo, ".ai/tasks/active/TASK-p2-orch-nosub.md", content)
+        errors = validate_ads.validate_task(path)
+        assert any("Sub-Tasks Detail" in e for e in errors), f"Expected Sub-Tasks Detail error, got: {errors}"
+
+    def test_orchestrated_task_with_subtasks_section_ok(self, tmp_ads_repo, monkeypatch):
+        monkeypatch.setattr(validate_ads, "REPO_ROOT", tmp_ads_repo)
+        content = (
+            MINIMAL_TASK_BASE.replace(
+                "| **updated_at** | 2026-03-22T10:00:00+08:00 |\n",
+                "| **updated_at** | 2026-03-22T10:00:00+08:00 |\n"
+                "| **coordination_model** | `orchestrated` |\n",
+            ).rstrip()
+            + "\n\n## Sub-Tasks Detail\n\n"
+            "| sub_task_id | 描述 | 负责角色 | 状态 |\n"
+            "|-------------|------|---------|------|\n"
+            "| `TASK-001` | 子任务 | Developer | pending |\n"
+        )
+        path = write_file(tmp_ads_repo, ".ai/tasks/active/TASK-p2-orch-withsub.md", content)
+        errors = validate_ads.validate_task(path)
+        sub_errors = [e for e in errors if "Sub-Tasks Detail" in e]
+        assert sub_errors == [], f"Unexpected Sub-Tasks Detail errors: {sub_errors}"
+
+    def test_direct_task_no_subtasks_section_ok(self, tmp_ads_repo, monkeypatch):
+        monkeypatch.setattr(validate_ads, "REPO_ROOT", tmp_ads_repo)
+        content = MINIMAL_TASK_BASE.replace(
+            "| **updated_at** | 2026-03-22T10:00:00+08:00 |\n",
+            "| **updated_at** | 2026-03-22T10:00:00+08:00 |\n"
+            "| **coordination_model** | `direct` |\n",
+        )
+        path = write_file(tmp_ads_repo, ".ai/tasks/active/TASK-p2-direct.md", content)
+        errors = validate_ads.validate_task(path)
+        sub_errors = [e for e in errors if "Sub-Tasks Detail" in e]
+        assert sub_errors == [], f"Unexpected Sub-Tasks Detail errors: {sub_errors}"
+
+
 class TestHasSpecDeltaEntry:
     def test_empty_text_returns_false(self):
         assert validate_ads.has_spec_delta_entry("") is False

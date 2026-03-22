@@ -167,6 +167,17 @@ def validate_task(path: Path) -> list[str]:
             f"got '{coordination_model}'"
         )
 
+    # Phase 2: parent_change_id 存在时检查变更目录
+    parent_change_id = strip_code(extract_table_value(text, "parent_change_id"))
+    if parent_change_id:
+        change_dir = REPO_ROOT / ".ai" / "changes" / parent_change_id
+        if not change_dir.is_dir():
+            errors.append(f"declared parent_change_id `{parent_change_id}` directory does not exist: {change_dir.relative_to(REPO_ROOT)}")
+
+    # Phase 2: orchestrated 任务必须有 Sub-Tasks Detail 节
+    if coordination_model == "orchestrated" and not find_section(text, "Sub-Tasks Detail"):
+        errors.append("orchestrated task must have a `## Sub-Tasks Detail` section")
+
     return errors
 
 
