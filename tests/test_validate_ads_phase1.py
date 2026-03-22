@@ -298,6 +298,51 @@ class TestTaskPhase1Fields:
             validate_ads.REPO_ROOT = original
         assert any("coordination_model" in e for e in errors)
 
+    def test_absent_coordination_model_passes(self, tmp_ads_repo):
+        """当 task 完全不含 coordination_model 字段时，validate_task() 不应报错。"""
+        content = (
+            "# 任务：测试任务\n\n"
+            "## 元数据\n\n"
+            "| 字段 | 值 |\n"
+            "|------|-----|\n"
+            "| **task_id** | `TASK-20260322-001` |\n"
+            "| **owner_role** | Developer |\n"
+            "| **owner** | test |\n"
+            "| **priority** | High |\n"
+            "| **deps** | `[]` |\n"
+            "| **handoff_to** | Integration |\n"
+            "| **team_pattern_id** | |\n"
+            "| **approval_owner** | HumanOwner |\n"
+            "| **allowed_agents** | `[]` |\n"
+            "| **trace_id** | TRACE-001 |\n"
+            "| **updated_at** | 2026-03-22T10:00:00+08:00 |\n\n"
+            "## 单写者范围\n\n"
+            "- **locked_paths**（本任务周期内仅主责可改）：\n"
+            "  - `src/` — 说明\n"
+            "- **forbidden_paths**（禁止改动）：\n"
+            "  - `.agent/` — 说明\n\n"
+            "## 共享改动升级（可选）\n\n无\n\n"
+            "## 背景与目标\n\n测试\n\n"
+            "## 验收标准（可勾选）\n\n- [ ] 通过\n\n"
+            "## 相关路径\n\n"
+            "| 路径 | 说明 |\n|------|------|\n| `src/` | 源码 |\n\n"
+            "## Memory refs（可选）\n\n无\n\n"
+            "## 证据期望（完成时必须附上）\n\n测试输出\n\n"
+            "## Freshness\n\n"
+            "- **stale_after**：P7D\n"
+            "- **最后更新时间说明**：初始创建\n\n"
+            "**状态**：`backlog`\n"
+        )
+        path = write_file(tmp_ads_repo, ".ai/tasks/active/TASK-absent.md", content)
+        original = validate_ads.REPO_ROOT
+        validate_ads.REPO_ROOT = tmp_ads_repo
+        try:
+            errors = validate_ads.validate_task(path)
+        finally:
+            validate_ads.REPO_ROOT = original
+        coord_errors = [e for e in errors if "coordination_model" in e]
+        assert coord_errors == [], f"absent field should not trigger error, got: {coord_errors}"
+
     def test_valid_coordination_model_passes(self, tmp_ads_repo):
         for model in ["direct", "orchestrated", "peer-parallel"]:
             content = (

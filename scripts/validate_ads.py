@@ -17,6 +17,9 @@ REQUEST_GLOBS = [".ai/requests/**/*.md", "examples/case-shared-change-request*.m
 QA_GLOBS = [".ai/qa/**/*.md", "examples/case-qa-*.md"]
 PATTERN_GLOBS = [".ai/patterns/*.md"]
 TOOLSET_PATHS = [REPO_ROOT / "tools" / "toolset.json", REPO_ROOT / "tools" / "toolset.json.example"]
+VALID_HANDOFF_STATUSES = {"DONE", "DONE_WITH_CONCERNS", "NEEDS_CONTEXT", "BLOCKED", "pending_resume"}
+VALID_SPEC_UPDATE_STATUSES = {"not_started", "in_progress", "updated", "not_applicable"}
+VALID_COORDINATION_MODELS = {"direct", "orchestrated", "peer-parallel"}
 
 
 def is_iso8601ish(value: str) -> bool:
@@ -372,10 +375,6 @@ REQUIRED_CONSTITUTION_SECTIONS = [
     "Role Definitions",
     "Agent Governance",
 ]
-
-VALID_HANDOFF_STATUSES = {"DONE", "DONE_WITH_CONCERNS", "NEEDS_CONTEXT", "BLOCKED", "pending_resume"}
-VALID_SPEC_UPDATE_STATUSES = {"not_started", "in_progress", "updated", "not_applicable"}
-VALID_COORDINATION_MODELS = {"direct", "orchestrated", "peer-parallel"}
 
 
 def validate_constitution(repo_root: Path) -> list[str]:
