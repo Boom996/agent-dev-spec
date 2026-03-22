@@ -407,6 +407,18 @@ class TestPatternPhase2Validations:
         )
 
 
+REPO_ROOT = Path(__file__).resolve().parent.parent
+
+
+class TestChangeProposalIntegration:
+    def test_valid_example_proposal_has_no_errors(self):
+        """The example change-proposal file should pass validation."""
+        example_path = REPO_ROOT / "examples" / "case-change-proposal" / "proposal.md"
+        assert example_path.exists(), f"Example file not found: {example_path}"
+        errors = validate_ads.validate_change_proposal(example_path)
+        assert errors == [], f"Unexpected errors: {errors}"
+
+
 class TestHasSpecDeltaEntry:
     def test_empty_text_returns_false(self):
         assert validate_ads.has_spec_delta_entry("") is False

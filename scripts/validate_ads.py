@@ -16,6 +16,7 @@ MEMORY_GLOBS = [".ai/memory/**/*.md", "examples/case-memory-*.md"]
 REQUEST_GLOBS = [".ai/requests/**/*.md", "examples/case-shared-change-request*.md"]
 QA_GLOBS = [".ai/qa/**/*.md", "examples/case-qa-*.md"]
 PATTERN_GLOBS = [".ai/patterns/*.md"]
+CHANGE_GLOBS = [".ai/changes/**/proposal.md", "examples/case-change-proposal/proposal.md"]
 TOOLSET_PATHS = [REPO_ROOT / "tools" / "toolset.json", REPO_ROOT / "tools" / "toolset.json.example"]
 VALID_HANDOFF_STATUSES = {"DONE", "DONE_WITH_CONCERNS", "NEEDS_CONTEXT", "BLOCKED", "pending_resume"}
 VALID_SPEC_UPDATE_STATUSES = {"not_started", "in_progress", "updated", "not_applicable"}
@@ -542,6 +543,7 @@ def main() -> int:
         files.extend(discover_files(REQUEST_GLOBS))
         files.extend(discover_files(QA_GLOBS))
         files.extend(discover_files(PATTERN_GLOBS))
+        files.extend(discover_files(CHANGE_GLOBS))
 
     failures = 0
 
