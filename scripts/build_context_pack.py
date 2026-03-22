@@ -70,6 +70,57 @@ def extract_table_first_column(section: str) -> list[str]:
     return rows
 
 
+def load_constitution_mission(repo_root: Path) -> str:
+    """Extract first non-empty line of Mission section from constitution.md."""
+    constitution_path = repo_root / ".agent" / "constitution.md"
+    if not constitution_path.exists():
+        return ""
+    text = read_text(constitution_path)
+    mission = find_section(text, "Mission")
+    for line in mission.splitlines():
+        line = line.strip()
+        if line:
+            return line
+    return ""
+
+
+def load_change_info(parent_change_id: str, repo_root: Path) -> tuple[str, str] | None:
+    """Return (title, status) from change proposal, or None if not found."""
+    proposal_path = repo_root / ".ai" / "changes" / parent_change_id / "proposal.md"
+    if not proposal_path.exists():
+        return None
+    text = read_text(proposal_path)
+    title = extract_table_value(text, "title") or ""
+    status = extract_table_value(text, "status") or ""
+    return (title, status) if title else None
+
+
+def _truncate_section(lines: list[str], marker: str, max_items: int) -> list[str]:
+    """Truncate a section starting with marker to at most max_items bullet lines."""
+    result = []
+    in_section = False
+    item_count = 0
+    for line in lines:
+        if line == marker:
+            in_section = True
+            result.append(line)
+            item_count = 0
+            continue
+        if in_section:
+            if line.startswith("[") and line.endswith("]"):
+                in_section = False
+                result.append(line)
+                continue
+            if line.startswith("- "):
+                item_count += 1
+                if item_count <= max_items:
+                    result.append(line)
+                # else skip
+                continue
+        result.append(line)
+    return result
+
+
 def infer_handoff(task_id: str) -> Path | None:
     candidate = REPO_ROOT / ".ai" / "handoffs" / f"{task_id}.md"
     return candidate if candidate.exists() else None
@@ -93,7 +144,7 @@ def load_identity(identity_path: Path | None) -> dict:
     return json.loads(identity_path.read_text(encoding="utf-8"))
 
 
-def build_pack(task_path: Path, handoff_path: Path | None, identity_path: Path | None, project_name: str | None) -> str:
+def build_pack(task_path: Path, handoff_path: Path | None, identity_path: Path | None, project_name: str | None, mode: str = "default") -> str:
     task_text = read_text(task_path)
     task_id = extract_table_value(task_text, "task_id") or task_path.stem
     owner_role = extract_table_value(task_text, "owner_role") or "unknown"
@@ -150,6 +201,32 @@ def build_pack(task_path: Path, handoff_path: Path | None, identity_path: Path |
         lines.append("[MEMORY_REFS]")
         lines.extend(f"- {item}" for item in sorted(set(memory_refs)))
 
+    if mode == "cli":
+        mission = load_constitution_mission(REPO_ROOT)
+        if mission:
+            lines.append("[CONSTITUTION]")
+            lines.append(mission)
+
+        parent_change_id = extract_table_value(task_text, "parent_change_id")
+        if parent_change_id:
+            change_info = load_change_info(parent_change_id, REPO_ROOT)
+            if change_info:
+                title, status = change_info
+                lines.append("[CHANGE_INFO]")
+                lines.append(f"change: {parent_change_id}")
+                lines.append(f"title: {title}")
+                lines.append(f"status: {status}")
+
+        coordination_model = extract_table_value(task_text, "coordination_model")
+        if coordination_model:
+            lines.append("[COORDINATION]")
+            lines.append(coordination_model)
+
+        # Enforce ≤120 lines
+        if len(lines) > 118:  # reserve 2 for [OUTPUT] lines
+            lines = _truncate_section(lines, "[RELATED_PATHS]", 5)
+            lines = _truncate_section(lines, "[MEMORY_REFS]", 5)
+
     lines.append("[OUTPUT]")
     lines.append("- Implement or review only within LOCKED_PATHS")
     lines.append("- Summarize files changed + verification output")
@@ -167,6 +244,7 @@ def main() -> int:
     )
     parser.add_argument("--project-name", help="Optional project name override")
     parser.add_argument("--output", help="Write pack to file instead of stdout")
+    parser.add_argument("--mode", choices=["default", "cli"], default="default", help="Output mode")
     args = parser.parse_args()
 
     task_path = Path(args.task).resolve()
@@ -175,7 +253,7 @@ def main() -> int:
     handoff_path = Path(args.handoff).resolve() if args.handoff else infer_handoff(task_id)
     identity_path = Path(args.identity).resolve() if args.identity else None
 
-    pack = build_pack(task_path, handoff_path, identity_path, args.project_name)
+    pack = build_pack(task_path, handoff_path, identity_path, args.project_name, mode=args.mode)
     if args.output:
         output_path = Path(args.output).resolve()
         output_path.parent.mkdir(parents=True, exist_ok=True)
