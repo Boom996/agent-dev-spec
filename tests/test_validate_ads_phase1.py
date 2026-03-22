@@ -115,7 +115,7 @@ class TestConstitutionValidation:
 
 
 class TestHandoffPhase1Fields:
-    """Tests for Phase 1 new handoff fields: handoff_status, blocked_reason, spec_update_status."""
+    """Tests for Phase 1 new handoff fields: handoff_status, spec_update_status."""
 
     VALID_HANDOFF_BASE = """\
         # ADS Handoff — `TASK-001`

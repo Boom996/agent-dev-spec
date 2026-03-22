@@ -202,20 +202,18 @@ def validate_handoff(path: Path) -> list[str]:
         if not (REPO_ROOT / ref).exists():
             errors.append(f"referenced memory object does not exist: {ref}")
 
-    # Phase 1：handoff_status 校验
-    VALID_HANDOFF_STATUS = {"DONE", "DONE_WITH_CONCERNS", "NEEDS_CONTEXT", "BLOCKED", "pending_resume"}
+    # Phase 1：handoff_status 为可选字段；有值时校验枚举范围
     handoff_status = strip_code(extract_table_value(text, "handoff_status"))
-    if handoff_status and handoff_status not in VALID_HANDOFF_STATUS:
+    if handoff_status and handoff_status not in VALID_HANDOFF_STATUSES:
         errors.append(
-            f"`handoff_status` must be one of {sorted(VALID_HANDOFF_STATUS)}, got '{handoff_status}'"
+            f"`handoff_status` must be one of {sorted(VALID_HANDOFF_STATUSES)}, got '{handoff_status}'"
         )
 
-    # Phase 1：spec_update_status 校验
-    VALID_SPEC_UPDATE_STATUS = {"not_started", "in_progress", "updated", "not_applicable"}
+    # Phase 1：spec_update_status 为可选字段；有值时校验枚举范围
     spec_update_status = strip_code(extract_table_value(text, "spec_update_status"))
-    if spec_update_status and spec_update_status not in VALID_SPEC_UPDATE_STATUS:
+    if spec_update_status and spec_update_status not in VALID_SPEC_UPDATE_STATUSES:
         errors.append(
-            f"`spec_update_status` must be one of {sorted(VALID_SPEC_UPDATE_STATUS)}, got '{spec_update_status}'"
+            f"`spec_update_status` must be one of {sorted(VALID_SPEC_UPDATE_STATUSES)}, got '{spec_update_status}'"
         )
 
     return errors
@@ -366,6 +364,9 @@ REQUIRED_CONSTITUTION_SECTIONS = [
     "Role Definitions",
     "Agent Governance",
 ]
+
+VALID_HANDOFF_STATUSES = {"DONE", "DONE_WITH_CONCERNS", "NEEDS_CONTEXT", "BLOCKED", "pending_resume"}
+VALID_SPEC_UPDATE_STATUSES = {"not_started", "in_progress", "updated", "not_applicable"}
 
 
 def validate_constitution(repo_root: Path) -> list[str]:
