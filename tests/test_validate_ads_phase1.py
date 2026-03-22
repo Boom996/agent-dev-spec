@@ -395,7 +395,7 @@ class TestTaskPhase1Fields:
 class TestConstitutionIntegration:
     """Test that validate_constitution() is callable and returns expected results."""
 
-    def test_main_warns_missing_constitution(self, tmp_ads_repo, capsys):
+    def test_main_warns_missing_constitution(self, tmp_ads_repo):
         # validate_constitution 返回非空错误列表（constitution.md 不存在）
         errors = validate_ads.validate_constitution(tmp_ads_repo)
         assert len(errors) > 0

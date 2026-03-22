@@ -472,6 +472,8 @@ def main() -> int:
         files.extend(discover_files(QA_GLOBS))
         files.extend(discover_files(PATTERN_GLOBS))
 
+    failures = 0
+
     # Phase 1：校验 constitution（始终针对 REPO_ROOT）
     constitution_errors = validate_constitution(REPO_ROOT)
     if constitution_errors:
@@ -479,15 +481,14 @@ def main() -> int:
         print("[FAIL] constitution: .agent/constitution.md")
         for error in constitution_errors:
             print(f"  - {error}")
-    elif (REPO_ROOT / ".agent" / "constitution.md").exists():
-        print("[OK] constitution: .agent/constitution.md")
+    else:
+        if (REPO_ROOT / ".agent" / "constitution.md").exists():
+            print("[OK] constitution: .agent/constitution.md")
 
     files = sorted(set(files))
     if not files:
         print("No ADS markdown files found to validate.")
-        return 0
-
-    failures = 0
+        return 1 if failures else 0
     for path in files:
         rel = path.relative_to(REPO_ROOT) if path.is_relative_to(REPO_ROOT) else path
         kind = detect_kind(path)
