@@ -33,6 +33,60 @@ class TestConstitutionValidation:
         errors = validate_ads.validate_constitution(tmp_ads_repo)
         assert any("Mission" in e for e in errors)
 
+    def test_empty_non_negotiable_principles_returns_error(self, tmp_ads_repo):
+        write_file(tmp_ads_repo, ".agent/constitution.md", """\
+            # Project Constitution
+
+            ## Mission
+            Build something great.
+
+            ## Non-Negotiable Principles
+
+            ## Role Definitions
+            - Developer: writes code
+
+            ## Agent Governance
+            - Humans approve
+        """)
+        errors = validate_ads.validate_constitution(tmp_ads_repo)
+        assert any("Non-Negotiable Principles" in e for e in errors)
+
+    def test_empty_role_definitions_returns_error(self, tmp_ads_repo):
+        write_file(tmp_ads_repo, ".agent/constitution.md", """\
+            # Project Constitution
+
+            ## Mission
+            Build something great.
+
+            ## Non-Negotiable Principles
+            - No breaking changes
+
+            ## Role Definitions
+
+            ## Agent Governance
+            - Humans approve
+        """)
+        errors = validate_ads.validate_constitution(tmp_ads_repo)
+        assert any("Role Definitions" in e for e in errors)
+
+    def test_empty_agent_governance_returns_error(self, tmp_ads_repo):
+        write_file(tmp_ads_repo, ".agent/constitution.md", """\
+            # Project Constitution
+
+            ## Mission
+            Build something great.
+
+            ## Non-Negotiable Principles
+            - No breaking changes
+
+            ## Role Definitions
+            - Developer: writes code
+
+            ## Agent Governance
+        """)
+        errors = validate_ads.validate_constitution(tmp_ads_repo)
+        assert any("Agent Governance" in e for e in errors)
+
     def test_valid_constitution_passes(self, tmp_ads_repo):
         write_file(tmp_ads_repo, ".agent/constitution.md", """\
             # Project Constitution
