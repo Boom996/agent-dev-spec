@@ -14,7 +14,7 @@
 | **trace_id** | |
 | **updated_at** | ISO8601 |
 | **stale_after** | `P2D` / `P7D` / 团队自定义 |
-| **handoff_status** | `DONE` \| `DONE_WITH_CONCERNS` \| `NEEDS_CONTEXT` \| `BLOCKED` |
+| **handoff_status** | `DONE` \| `DONE_WITH_CONCERNS` \| `NEEDS_CONTEXT` \| `BLOCKED` \| `pending_resume` |
 | **blocked_reason** | （仅 NEEDS_CONTEXT / BLOCKED 时填写，说明阻断原因或缺失信息） |
 | **spec_update_status** | `not_started` \| `in_progress` \| `updated` \| `not_applicable` |
 
