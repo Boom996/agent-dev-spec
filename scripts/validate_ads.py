@@ -20,6 +20,7 @@ TOOLSET_PATHS = [REPO_ROOT / "tools" / "toolset.json", REPO_ROOT / "tools" / "to
 VALID_HANDOFF_STATUSES = {"DONE", "DONE_WITH_CONCERNS", "NEEDS_CONTEXT", "BLOCKED", "pending_resume"}
 VALID_SPEC_UPDATE_STATUSES = {"not_started", "in_progress", "updated", "not_applicable"}
 VALID_COORDINATION_MODELS = {"direct", "orchestrated", "peer-parallel"}
+VALID_CHANGE_STATUSES = {"pending_approval", "approved", "in_progress", "done", "cancelled"}
 
 
 def is_iso8601ish(value: str) -> bool:
@@ -94,6 +95,8 @@ def detect_kind(path: Path) -> str | None:
         return "qa_fail"
     if text.startswith("# Team Pattern"):
         return "pattern"
+    if text.startswith("# Change Proposal"):
+        return "change_proposal"
     return None
 
 
@@ -425,6 +428,52 @@ def validate_pattern(path: Path) -> list[str]:
     return errors
 
 
+def has_spec_delta_entry(text: str) -> bool:
+    """Return True if spec-delta text has at least one non-header table row."""
+    in_table = False
+    for line in text.splitlines():
+        stripped = line.strip()
+        if stripped.startswith("| Spec") or stripped.startswith("|-------"):
+            in_table = True
+            continue
+        if in_table and stripped.startswith("|") and stripped.endswith("|"):
+            # Not a separator row
+            if not re.match(r"^\|[-| ]+\|$", stripped):
+                return True
+    return False
+
+
+def validate_change_proposal(path: Path) -> list[str]:
+    text = read_text(path)
+    errors: list[str] = []
+
+    for field in ["change_id", "title", "status", "proposed_by", "updated_at"]:
+        if not extract_table_value(text, field):
+            errors.append(f"missing metadata field `{field}`")
+
+    updated_at = extract_table_value(text, "updated_at")
+    if updated_at and "ISO8601" not in updated_at and not is_iso8601ish(strip_code(updated_at) or ""):
+        errors.append("`updated_at` is not ISO8601-like")
+
+    status = strip_code(extract_table_value(text, "status"))
+    if status and status not in VALID_CHANGE_STATUSES:
+        errors.append(
+            f"`status` must be one of {sorted(VALID_CHANGE_STATUSES)}, got '{status}'"
+        )
+
+    if not find_section(text, "What & Why"):
+        errors.append("missing `What & Why` section")
+
+    scope = find_section(text, "Scope")
+    if not scope.strip():
+        errors.append("missing `Scope` section")
+
+    if not find_section(text, "Impact"):
+        errors.append("missing `Impact` section")
+
+    return errors
+
+
 def validate_toolset(path: Path) -> list[str]:
     errors: list[str] = []
     try:
@@ -506,6 +555,8 @@ def main() -> int:
             errors = validate_qa_pass(path)
         elif kind == "qa_fail":
             errors = validate_qa_fail(path)
+        elif kind == "change_proposal":
+            errors = validate_change_proposal(path)
         else:
             errors = validate_pattern(path)
         if errors:
