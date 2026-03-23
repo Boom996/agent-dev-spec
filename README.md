@@ -10,11 +10,13 @@
 
 ## 快速开始
 
-1. 将本文件夹**复制或子树合并**到你的项目根目录（或作为子模块）。
+1. 运行 `python3 scripts/ads_init.py /path/to/your-project`，将最小可运行 ADS 骨架植入目标仓库。
 2. 让参与者**首先阅读**根目录 [`README_AGENT.md`](README_AGENT.md)。
 3. 按 [`docs/`](docs/) 索引阅读原则与落地步骤。
 4. 从 [`templates/`](templates/) 与 [`.ai/templates/`](.ai/templates/) 复制范例到业务仓库并改名使用。
 5. 参考 [`examples/`](examples/) 中的**完整案例**（任务 → 共享改动 → 交接 → 记忆对象 → CLI / knowledge pack）走一遍流程。
+
+初始化完成后，建议在目标仓库执行 `python3 scripts/ads_doctor.py` 做一次接入自检。
 
 ## 目录结构
 
@@ -39,7 +41,12 @@ agent-dev-spec/
 ## 当前已实现的最小能力
 
 - 任务 / 交接模板增强：`trace_id`、`updated_at`、结构化 evidence、共享改动升级
+- `ads_init.py`：将 ADS 最小工作区快速植入其他项目
 - `validate_ads.py`：校验 task / handoff / memory / request / qa / pattern / toolset
+- `ads_doctor.py`：检查接入仓库的自举完整性、task/handoff 对齐、toolset/manifest 漂移
+- `ads_resume.py`：从 task / handoff / change proposal / constitution 生成续做上下文摘要
+- `ads_handoff_draft.py`：从 task 元数据 + git diff 生成 handoff 草稿
+- `ads_evidence_capture.py`：执行验证命令并输出标准 evidence 表格行
 - `build_context_pack.py`：生成 CLI 上下文包
 - `ads_health_report.py`：输出最小协作健康摘要
 - `build_knowledge_pack.py`：从 task / handoff / memory 生成知识消费包
