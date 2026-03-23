@@ -1,0 +1,32 @@
+{
+  "tool_id": "ads.spec_syncer",
+  "name": "spec-syncer",
+  "version": "1.0.0",
+  "description": "Infer impacted ADS specs from a task, changed paths, and linked change proposal, then optionally write spec-delta.md.",
+  "entry": {
+    "type": "script",
+    "path": "./run.py",
+    "interpreter": "python3"
+  },
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "task_path": {
+        "type": "string",
+        "description": "Path to the ADS task markdown file"
+      },
+      "changed_paths": {
+        "type": "array",
+        "description": "Optional changed paths. If omitted, the script uses task related paths as hints.",
+        "items": {
+          "type": "string"
+        }
+      },
+      "spec_delta_output": {
+        "type": "string",
+        "description": "Optional output path for a generated spec-delta markdown file"
+      }
+    },
+    "required": ["task_path"]
+  }
+}

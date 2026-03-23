@@ -1,0 +1,36 @@
+{
+  "tool_id": "ads.blocked_triager",
+  "name": "blocked-triager",
+  "version": "1.0.0",
+  "description": "Classify an ADS task situation as CONTINUE, NEEDS_CONTEXT, BLOCKED, or shared-change-request escalation, and optionally draft the request file.",
+  "entry": {
+    "type": "script",
+    "path": "./run.py",
+    "interpreter": "python3"
+  },
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "task_path": {
+        "type": "string",
+        "description": "Path to the ADS task markdown file"
+      },
+      "summary": {
+        "type": "string",
+        "description": "Short summary of the blocker or uncertainty"
+      },
+      "target_paths": {
+        "type": "array",
+        "description": "Paths the current actor wants to touch",
+        "items": {
+          "type": "string"
+        }
+      },
+      "request_output": {
+        "type": "string",
+        "description": "Optional output path for a generated shared-change-request draft"
+      }
+    },
+    "required": ["task_path"]
+  }
+}

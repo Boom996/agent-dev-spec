@@ -53,6 +53,10 @@ agent-dev-spec/
 - `build_knowledge_pack.py`：从 task / handoff / memory 生成知识消费包
 - `skills/task-decomposer/`：将 change proposal 拆成 role-oriented ADS task 草稿
 - `skills/handoff-writer/`：把 task + 当前 worktree 收敛成可落盘的 handoff 文件
+- `skills/blocked-triager/`：判断任务是 `NEEDS_CONTEXT`、`BLOCKED` 还是应升级为 `shared-change-request`
+- `skills/spec-syncer/`：推断受影响 spec，输出 `spec_update_status` 建议并可生成 `spec-delta`
+- `skills/blocked-triager/`：判断任务是 `NEEDS_CONTEXT`、`BLOCKED` 还是应升级为 `shared-change-request`
+- `skills/spec-syncer/`：推断受影响 spec，输出 `spec_update_status` 建议并可生成 `spec-delta`
 - `check_stale_knowledge.py`：检查 memory freshness
 - `.ai/patterns/`：内置 team patterns
 - `.ai/memory/`：最小共享事实层

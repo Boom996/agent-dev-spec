@@ -4,6 +4,16 @@
   "registry": "project-local",
   "tools": [
     {
+      "tool_id": "ads.blocked_triager",
+      "title": "blocked-triager",
+      "description": "Classify an ADS task situation as CONTINUE, NEEDS_CONTEXT, BLOCKED, or shared-change-request escalation, and optionally draft the request file.",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "skill",
+      "manifest": "skills/blocked-triager/manifest.json"
+    },
+    {
       "tool_id": "ads.check_stale_knowledge",
       "title": "ADS Check Stale Knowledge",
       "description": "Check whether ADS memory objects are stale relative to review windows and references.",
@@ -102,6 +112,16 @@
       "version": "1.0.0",
       "source": "script",
       "entrypoint": "scripts/ads_resume.py"
+    },
+    {
+      "tool_id": "ads.spec_syncer",
+      "title": "spec-syncer",
+      "description": "Infer impacted ADS specs from a task, changed paths, and linked change proposal, then optionally write spec-delta.md.",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "skill",
+      "manifest": "skills/spec-syncer/manifest.json"
     },
     {
       "tool_id": "ads.sync_tools",
