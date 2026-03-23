@@ -13,7 +13,7 @@
 | 客户端 | 指南 | 说明 |
 |--------|------|------|
 | Claude Code | [claude-code.md](claude-code.md) | CLAUDE.md 模板、hooks 配置、Auto Memory 映射 |
-| Codex CLI | *(待补充)* | context pack 消费方式 |
+| Codex CLI | [codex-cli.md](codex-cli.md) | `ads_resume` / `ads_handoff_draft` / `ads_evidence_capture` 工作流 |
 | Cursor | *(待补充)* | .cursorrules 配置 |
 | OpenCode | *(待补充)* | AGENTS.md 配置 |
 

@@ -1,0 +1,147 @@
+{
+  "$schema_comment": "ADS tool registry. Keep tool_id stable across clients and generate this file via scripts/sync-tools.py.",
+  "version": "1.0",
+  "registry": "project-local",
+  "tools": [
+    {
+      "tool_id": "ads.check_stale_knowledge",
+      "title": "ADS Check Stale Knowledge",
+      "description": "Check whether ADS memory objects are stale relative to review windows and references.",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "script",
+      "entrypoint": "scripts/check_stale_knowledge.py"
+    },
+    {
+      "tool_id": "ads.context_pack",
+      "title": "ADS Context Pack",
+      "description": "Generate a CLI context pack from a task and optional handoff.",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "script",
+      "entrypoint": "scripts/build_context_pack.py"
+    },
+    {
+      "tool_id": "ads.doctor",
+      "title": "ADS Doctor",
+      "description": "Check ADS bootstrap completeness, task/handoff alignment, and tool drift.",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "script",
+      "entrypoint": "scripts/ads_doctor.py"
+    },
+    {
+      "tool_id": "ads.evidence_capture",
+      "title": "ADS Evidence Capture",
+      "description": "Execute a verification command and emit a standard ADS evidence table row.",
+      "owner": "platform",
+      "risk_level": "medium",
+      "version": "1.0.0",
+      "source": "script",
+      "entrypoint": "scripts/ads_evidence_capture.py"
+    },
+    {
+      "tool_id": "ads.handoff_draft",
+      "title": "ADS Handoff Draft",
+      "description": "Generate a handoff draft from task metadata and the current git diff.",
+      "owner": "platform",
+      "risk_level": "medium",
+      "version": "1.0.0",
+      "source": "script",
+      "entrypoint": "scripts/ads_handoff_draft.py"
+    },
+    {
+      "tool_id": "ads.health_report",
+      "title": "ADS Health Report",
+      "description": "Generate a minimal collaboration health report for ADS workspaces.",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "script",
+      "entrypoint": "scripts/ads_health_report.py"
+    },
+    {
+      "tool_id": "ads.init",
+      "title": "ADS Init",
+      "description": "Scaffold the minimal ADS workspace into another repository.",
+      "owner": "platform",
+      "risk_level": "medium",
+      "version": "1.0.0",
+      "source": "script",
+      "entrypoint": "scripts/ads_init.py"
+    },
+    {
+      "tool_id": "ads.knowledge_pack",
+      "title": "ADS Knowledge Pack",
+      "description": "Build a minimal knowledge pack from task, handoff, and memory objects.",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "script",
+      "entrypoint": "scripts/build_knowledge_pack.py"
+    },
+    {
+      "tool_id": "ads.resume",
+      "title": "ADS Resume",
+      "description": "Build a resume-oriented context summary from task, handoff, change, and constitution artifacts.",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "script",
+      "entrypoint": "scripts/ads_resume.py"
+    },
+    {
+      "tool_id": "ads.sync_tools",
+      "title": "ADS Sync Tools",
+      "description": "Synchronize toolset entries from ADS script tools and skill manifests.",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "script",
+      "entrypoint": "scripts/sync-tools.py"
+    },
+    {
+      "tool_id": "ads.validate",
+      "title": "ADS Validate",
+      "description": "Validate task, handoff, memory, request, QA, pattern, spec, and toolset artifacts.",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "script",
+      "entrypoint": "scripts/validate_ads.py"
+    },
+    {
+      "tool_id": "competitive-plan-validator",
+      "title": "competitive-plan-validator",
+      "description": "对产品方案做当前竞品扫描与内部模拟分析，输出扫描记录、分析报告和产品增强建议。",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.1.0",
+      "source": "skill",
+      "manifest": "skills/competitive-plan-validator/manifest.json"
+    },
+    {
+      "tool_id": "example_tool_id",
+      "title": "example_skill",
+      "description": "示例：对 ADS manifest 字段的占位说明。真实技能请替换描述与参数。",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "skill",
+      "manifest": "skills/_example-skill/manifest.json"
+    }
+  ],
+  "mcp_servers": [
+    {
+      "id": "ads-server",
+      "config_path": "tools/mcp/ads-server.json.example"
+    },
+    {
+      "id": "example-server",
+      "config_path": "tools/mcp/example-server.json.example"
+    }
+  ]
+}

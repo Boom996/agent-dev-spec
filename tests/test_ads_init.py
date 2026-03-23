@@ -24,13 +24,21 @@ class TestAdsInit:
         assert (target_root / "README_AGENT.md").exists()
         assert (target_root / ".agent" / "constitution.md").exists()
         assert (target_root / ".agent" / "docs" / "00-overview.md").exists()
+        assert (target_root / ".agent" / "docs" / "guides" / "client-adapters" / "codex-cli.md").exists()
         assert (target_root / ".ai" / "START_HERE.md").exists()
         assert (target_root / "tools" / "toolset.json").exists()
+        assert (target_root / "tools" / "mcp" / "ads-server.json.example").exists()
         assert (target_root / "scripts" / "ads_doctor.py").exists()
+        assert (target_root / "scripts" / "sync-tools.py").exists()
 
         identity = json.loads((target_root / ".agent" / "identity.json").read_text(encoding="utf-8"))
         assert identity["project_name"] == "space-game"
         assert identity["standard_verify_commands"]["test"] == "TODO: add your standard verify command"
+
+        toolset = json.loads((target_root / "tools" / "toolset.json").read_text(encoding="utf-8"))
+        tool_ids = {tool["tool_id"] for tool in toolset["tools"]}
+        assert "ads.doctor" in tool_ids
+        assert "ads.sync_tools" in tool_ids
 
         readme_agent = (target_root / "README_AGENT.md").read_text(encoding="utf-8")
         assert ".agent/docs/00-overview.md" in readme_agent

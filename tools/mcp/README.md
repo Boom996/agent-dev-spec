@@ -9,3 +9,8 @@
 
 1. 将 `*.example` 改名为实际配置（并加入 `.gitignore` 若含秘密）。
 2. 在 `tools/toolset.json` 的 `mcp_servers` 中引用对应文件路径。
+
+当前模板提供两个示例：
+
+- `ads-server.json.example` — ADS 脚本工具映射到 MCP bridge / server 的占位配置
+- `example-server.json.example` — 通用 MCP server 示例

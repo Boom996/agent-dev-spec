@@ -28,6 +28,7 @@
 
 - 本仓库注册的 MCP tools（或引用 manifest）
 - 版本、责任人、风险等级、标签（可选）
+- ADS CLI script tools（如 `ads.resume`、`ads.doctor`、`ads.handoff_draft`）
 
 供脚本生成各客户端配置片段，或供人类查阅「全仓可调用的工具 ID」。
 
@@ -52,6 +53,7 @@
 - manifest 引用的文件存在
 - `toolset.json` 中的 ID 与 manifest 一致
 - MCP 配置 JSON/YAML 可解析
+- 运行 `python3 scripts/sync-tools.py --check`，阻止 registry 漂移
 
 ## 无 MCP 时的降级
 

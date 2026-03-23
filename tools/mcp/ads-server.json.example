@@ -1,0 +1,14 @@
+{
+  "comment": "Example MCP registration for ADS tools. Replace the command and args with your actual MCP bridge runtime.",
+  "mcpServers": {
+    "ads-server": {
+      "command": "python3",
+      "args": [
+        "/absolute/path/to/ads-mcp-server.py",
+        "--repo-root",
+        "."
+      ],
+      "env": {}
+    }
+  }
+}

@@ -20,6 +20,7 @@ COPY_MAP = {
     ".agent/constitution.md": ".agent/constitution.md",
     ".agent/agent_map.yaml.example": ".agent/agent_map.yaml",
     "tools/mcp/README.md": "tools/mcp/README.md",
+    "tools/mcp/ads-server.json.example": "tools/mcp/ads-server.json.example",
     "tools/mcp/example-server.json.example": "tools/mcp/example-server.json.example",
     "scripts/validate_ads.py": "scripts/validate_ads.py",
     "scripts/build_context_pack.py": "scripts/build_context_pack.py",
@@ -27,6 +28,10 @@ COPY_MAP = {
     "scripts/check_stale_knowledge.py": "scripts/check_stale_knowledge.py",
     "scripts/ads_health_report.py": "scripts/ads_health_report.py",
     "scripts/ads_doctor.py": "scripts/ads_doctor.py",
+    "scripts/ads_resume.py": "scripts/ads_resume.py",
+    "scripts/ads_handoff_draft.py": "scripts/ads_handoff_draft.py",
+    "scripts/ads_evidence_capture.py": "scripts/ads_evidence_capture.py",
+    "scripts/sync-tools.py": "scripts/sync-tools.py",
 }
 
 DOC_FILES = [
@@ -40,6 +45,7 @@ DOC_FILES = [
     "06-evolution.md",
     "guides/client-adapters/README.md",
     "guides/client-adapters/claude-code.md",
+    "guides/client-adapters/codex-cli.md",
 ]
 
 GENERATED_DIRS = [
@@ -98,8 +104,74 @@ def build_toolset() -> str:
         "$schema_comment": "ADS tool registry skeleton. Register project skills and MCP tools here.",
         "version": "1.0",
         "registry": "project-local",
-        "tools": [],
-        "mcp_servers": [],
+        "tools": [
+            {
+                "tool_id": "ads.doctor",
+                "title": "ADS Doctor",
+                "description": "Check ADS bootstrap completeness, task/handoff alignment, and tool drift.",
+                "owner": "platform",
+                "risk_level": "low",
+                "version": "1.0.0",
+                "source": "script",
+                "entrypoint": "scripts/ads_doctor.py",
+            },
+            {
+                "tool_id": "ads.resume",
+                "title": "ADS Resume",
+                "description": "Build a resume-oriented context summary from task, handoff, change, and constitution artifacts.",
+                "owner": "platform",
+                "risk_level": "low",
+                "version": "1.0.0",
+                "source": "script",
+                "entrypoint": "scripts/ads_resume.py",
+            },
+            {
+                "tool_id": "ads.handoff_draft",
+                "title": "ADS Handoff Draft",
+                "description": "Generate a handoff draft from task metadata and the current git diff.",
+                "owner": "platform",
+                "risk_level": "medium",
+                "version": "1.0.0",
+                "source": "script",
+                "entrypoint": "scripts/ads_handoff_draft.py",
+            },
+            {
+                "tool_id": "ads.evidence_capture",
+                "title": "ADS Evidence Capture",
+                "description": "Execute a verification command and emit a standard ADS evidence table row.",
+                "owner": "platform",
+                "risk_level": "medium",
+                "version": "1.0.0",
+                "source": "script",
+                "entrypoint": "scripts/ads_evidence_capture.py",
+            },
+            {
+                "tool_id": "ads.validate",
+                "title": "ADS Validate",
+                "description": "Validate task, handoff, memory, request, QA, pattern, spec, and toolset artifacts.",
+                "owner": "platform",
+                "risk_level": "low",
+                "version": "1.0.0",
+                "source": "script",
+                "entrypoint": "scripts/validate_ads.py",
+            },
+            {
+                "tool_id": "ads.sync_tools",
+                "title": "ADS Sync Tools",
+                "description": "Synchronize toolset entries from ADS script tools and skill manifests.",
+                "owner": "platform",
+                "risk_level": "low",
+                "version": "1.0.0",
+                "source": "script",
+                "entrypoint": "scripts/sync-tools.py",
+            }
+        ],
+        "mcp_servers": [
+            {
+                "id": "ads-server",
+                "config_path": "tools/mcp/ads-server.json.example",
+            }
+        ],
     }
     return json.dumps(data, ensure_ascii=False, indent=2) + "\n"
 
