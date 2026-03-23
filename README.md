@@ -51,6 +51,8 @@ agent-dev-spec/
 - `build_context_pack.py`：生成 CLI 上下文包
 - `ads_health_report.py`：输出最小协作健康摘要
 - `build_knowledge_pack.py`：从 task / handoff / memory 生成知识消费包
+- `skills/task-decomposer/`：将 change proposal 拆成 role-oriented ADS task 草稿
+- `skills/handoff-writer/`：把 task + 当前 worktree 收敛成可落盘的 handoff 文件
 - `check_stale_knowledge.py`：检查 memory freshness
 - `.ai/patterns/`：内置 team patterns
 - `.ai/memory/`：最小共享事实层

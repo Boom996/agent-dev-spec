@@ -54,6 +54,16 @@
       "entrypoint": "scripts/ads_handoff_draft.py"
     },
     {
+      "tool_id": "ads.handoff_writer",
+      "title": "handoff-writer",
+      "description": "Write a concrete ADS handoff markdown file from a task, current git diff, and handoff metadata defaults.",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "skill",
+      "manifest": "skills/handoff-writer/manifest.json"
+    },
+    {
       "tool_id": "ads.health_report",
       "title": "ADS Health Report",
       "description": "Generate a minimal collaboration health report for ADS workspaces.",
@@ -102,6 +112,16 @@
       "version": "1.0.0",
       "source": "script",
       "entrypoint": "scripts/sync-tools.py"
+    },
+    {
+      "tool_id": "ads.task_decomposer",
+      "title": "task-decomposer",
+      "description": "Split an ADS change proposal into role-oriented task drafts with related paths and parent_change_id already filled.",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "skill",
+      "manifest": "skills/task-decomposer/manifest.json"
     },
     {
       "tool_id": "ads.validate",

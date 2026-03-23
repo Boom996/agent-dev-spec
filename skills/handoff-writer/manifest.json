@@ -1,0 +1,33 @@
+{
+  "tool_id": "ads.handoff_writer",
+  "name": "handoff-writer",
+  "version": "1.0.0",
+  "description": "Write a concrete ADS handoff markdown file from a task, current git diff, and handoff metadata defaults.",
+  "entry": {
+    "type": "script",
+    "path": "./run.py",
+    "interpreter": "python3"
+  },
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "task_path": {
+        "type": "string",
+        "description": "Path to the ADS task markdown file"
+      },
+      "output": {
+        "type": "string",
+        "description": "Optional output path for the generated handoff file"
+      },
+      "from_actor": {
+        "type": "string",
+        "description": "Actor label such as `Backend @ Codex`"
+      },
+      "status": {
+        "type": "string",
+        "description": "handoff_status value"
+      }
+    },
+    "required": ["task_path"]
+  }
+}
