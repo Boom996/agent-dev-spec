@@ -1,0 +1,33 @@
+{
+  "tool_id": "ads.integration_reviewer",
+  "name": "integration-reviewer",
+  "version": "1.0.0",
+  "description": "Review ADS task and handoff artifacts for spec compliance and code quality readiness, then write a QA PASS/FAIL report.",
+  "entry": {
+    "type": "script",
+    "path": "./run.py",
+    "interpreter": "python3"
+  },
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "task_path": {
+        "type": "string",
+        "description": "Path to the ADS task markdown file"
+      },
+      "handoff_path": {
+        "type": "string",
+        "description": "Path to the ADS handoff markdown file"
+      },
+      "output": {
+        "type": "string",
+        "description": "Optional output path for the QA result markdown file"
+      },
+      "qa_actor": {
+        "type": "string",
+        "description": "QA or reviewer label"
+      }
+    },
+    "required": ["task_path", "handoff_path"]
+  }
+}

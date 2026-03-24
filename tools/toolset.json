@@ -94,6 +94,16 @@
       "entrypoint": "scripts/ads_init.py"
     },
     {
+      "tool_id": "ads.integration_reviewer",
+      "title": "integration-reviewer",
+      "description": "Review ADS task and handoff artifacts for spec compliance and code quality readiness, then write a QA PASS/FAIL report.",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "skill",
+      "manifest": "skills/integration-reviewer/manifest.json"
+    },
+    {
       "tool_id": "ads.knowledge_pack",
       "title": "ADS Knowledge Pack",
       "description": "Build a minimal knowledge pack from task, handoff, and memory objects.",

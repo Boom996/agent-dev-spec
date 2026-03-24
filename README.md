@@ -55,6 +55,7 @@ agent-dev-spec/
 - `skills/handoff-writer/`：把 task + 当前 worktree 收敛成可落盘的 handoff 文件
 - `skills/blocked-triager/`：判断任务是 `NEEDS_CONTEXT`、`BLOCKED` 还是应升级为 `shared-change-request`
 - `skills/spec-syncer/`：推断受影响 spec，输出 `spec_update_status` 建议并可生成 `spec-delta`
+- `skills/integration-reviewer/`：基于 task + handoff 产出 QA PASS/FAIL 结论，覆盖 spec compliance 与 code quality 闸口
 - `skills/blocked-triager/`：判断任务是 `NEEDS_CONTEXT`、`BLOCKED` 还是应升级为 `shared-change-request`
 - `skills/spec-syncer/`：推断受影响 spec，输出 `spec_update_status` 建议并可生成 `spec-delta`
 - `check_stale_knowledge.py`：检查 memory freshness
