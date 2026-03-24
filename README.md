@@ -95,6 +95,11 @@ agent-dev-spec/
 - 查看客户端适配：[`docs/guides/client-adapters/README.md`](docs/guides/client-adapters/README.md)
 - 查看端到端案例：[`examples/README.md`](examples/README.md)
 
-## 许可
+## 许可与商业授权
 
-模板文本可按需修改后用于商业项目；默认建议与宿主项目许可证保持一致。
+本仓库采用的是“公开源码、禁止商业使用”的发布方式，方便开发者学习、研究、评估和非商业实践；它**不是** OSI 定义下的开放源代码许可证项目。
+
+- 代码默认适用 [`LICENSE`](LICENSE) 中声明的 `PolyForm Noncommercial 1.0.0`
+- 商业使用、商业集成、商业分发、商业培训或基于本仓库提供收费服务，需要单独取得书面商业授权
+- 商业授权联系：`17764546751@163.com`
+- 具体说明见 [`COMMERCIAL_LICENSE.md`](COMMERCIAL_LICENSE.md)
