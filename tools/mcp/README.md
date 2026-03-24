@@ -12,5 +12,5 @@
 
 当前模板提供两个示例：
 
-- `ads-server.json.example` — ADS 脚本工具映射到 MCP bridge / server 的占位配置
+- `ads-server.json.example` — ADS MCP stdio server 示例配置，默认指向 `scripts/ads_mcp_server.py`
 - `example-server.json.example` — 通用 MCP server 示例

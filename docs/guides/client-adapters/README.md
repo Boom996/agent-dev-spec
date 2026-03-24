@@ -14,8 +14,8 @@
 |--------|------|------|
 | Claude Code | [claude-code.md](claude-code.md) | CLAUDE.md 模板、hooks 配置、Auto Memory 映射 |
 | Codex CLI | [codex-cli.md](codex-cli.md) | `ads_resume` / `ads_handoff_draft` / `ads_evidence_capture` 工作流 |
-| Cursor | *(待补充)* | .cursorrules 配置 |
-| OpenCode | *(待补充)* | AGENTS.md 配置 |
+| Cursor | [cursor.md](cursor.md) | MCP 驱动的 ADS tool workflow |
+| OpenCode | [opencode.md](opencode.md) | `AGENTS.md` + CLI / MCP 结合方式 |
 
 ## 适配指南编写规范
 

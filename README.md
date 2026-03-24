@@ -48,6 +48,7 @@ agent-dev-spec/
 - `ads_handoff_draft.py`：从 task 元数据 + git diff 生成 handoff 草稿
 - `ads_evidence_capture.py`：执行验证命令并输出标准 evidence 表格行
 - `sync-tools.py`：同步 `skills/*/manifest.json` 与 `tools/toolset.json`，统一工具注册
+- `ads_mcp_server.py`：把 ADS 高价值脚本 / skills 暴露为 MCP stdio tools，供 Cursor / Codex / OpenCode 统一调用
 - `build_context_pack.py`：生成 CLI 上下文包
 - `ads_health_report.py`：输出最小协作健康摘要
 - `build_knowledge_pack.py`：从 task / handoff / memory 生成知识消费包

@@ -31,6 +31,7 @@ COPY_MAP = {
     "scripts/ads_resume.py": "scripts/ads_resume.py",
     "scripts/ads_handoff_draft.py": "scripts/ads_handoff_draft.py",
     "scripts/ads_evidence_capture.py": "scripts/ads_evidence_capture.py",
+    "scripts/ads_mcp_server.py": "scripts/ads_mcp_server.py",
     "scripts/sync-tools.py": "scripts/sync-tools.py",
 }
 
@@ -46,6 +47,8 @@ DOC_FILES = [
     "guides/client-adapters/README.md",
     "guides/client-adapters/claude-code.md",
     "guides/client-adapters/codex-cli.md",
+    "guides/client-adapters/cursor.md",
+    "guides/client-adapters/opencode.md",
 ]
 
 GENERATED_DIRS = [

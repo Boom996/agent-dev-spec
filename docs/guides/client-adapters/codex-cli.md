@@ -72,6 +72,25 @@ python3 scripts/sync-tools.py --check
 python3 scripts/sync-tools.py
 ```
 
+### 6. 通过 MCP 统一调用 ADS 工具
+
+如果当前 Codex 环境支持 MCP，可直接指向：
+
+```json
+{
+  "mcpServers": {
+    "ads-server": {
+      "command": "python3",
+      "args": [
+        "scripts/ads_mcp_server.py",
+        "--repo-root",
+        "."
+      ]
+    }
+  }
+}
+```
+
 ## 字段映射建议
 
 | ADS 对象 | Codex CLI 中的体现 |
@@ -92,4 +111,4 @@ python3 scripts/sync-tools.py
 
 - Codex CLI 本身不是 MCP 注册中心，仍需 `toolset.json` 作为统一 registry
 - 没有客户端原生 task 面板，仍需依赖 `.ai/` 目录中的任务与交接文件
-- 如果未来要暴露为真正 MCP tools，还需要单独的 ADS MCP bridge / server 实现
+- 即使已接入 ADS MCP server，repo-native 文件仍是唯一事实源，不应把状态藏进客户端私有配置
