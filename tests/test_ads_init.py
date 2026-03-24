@@ -24,11 +24,13 @@ class TestAdsInit:
         assert (target_root / "README_AGENT.md").exists()
         assert (target_root / ".agent" / "constitution.md").exists()
         assert (target_root / ".agent" / "docs" / "00-overview.md").exists()
+        assert (target_root / ".agent" / "docs" / "guides" / "adoption-playbook.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "client-adapters" / "codex-cli.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "client-adapters" / "cursor.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "client-adapters" / "opencode.md").exists()
         assert (target_root / ".ai" / "START_HERE.md").exists()
         assert (target_root / ".ai" / "innovations").exists()
+        assert (target_root / ".github" / "workflows" / "ads-checks.yml.example").exists()
         assert (target_root / "tools" / "toolset.json").exists()
         assert (target_root / "tools" / "mcp" / "ads-server.json.example").exists()
         assert (target_root / "scripts" / "ads_doctor.py").exists()
@@ -46,6 +48,7 @@ class TestAdsInit:
 
         readme_agent = (target_root / "README_AGENT.md").read_text(encoding="utf-8")
         assert ".agent/docs/00-overview.md" in readme_agent
+        assert ".agent/docs/guides/adoption-playbook.md" in readme_agent
 
     def test_init_repo_infers_node_verify_commands(self, tmp_path):
         target_root = tmp_path / "arcade"

@@ -14,3 +14,8 @@
 | 07 | [07-iteration-log.md](07-iteration-log.md) | 已执行增强、验证结果与后续迭代建议 |
 
 阅读顺序：**00 → 01 → 04 → 06**（其余按需要查阅）。
+
+## 落地指南
+
+- [guides/adoption-playbook.md](guides/adoption-playbook.md)：把 ADS 接入现有项目的 10 分钟落地路径、常见错误与检查清单
+- [guides/client-adapters/README.md](guides/client-adapters/README.md)：按客户端查看 Claude Code、Codex CLI、Cursor、OpenCode 的适配说明

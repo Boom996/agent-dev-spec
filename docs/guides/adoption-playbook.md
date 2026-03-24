@@ -1,0 +1,136 @@
+# ADS Adoption Playbook
+
+> 目标：让一个已有项目在最短时间内接入 **ADS（Agent Development Specification）**，并把多 Agent 协作从“聊天驱动”升级为“有契约、有交接、有证据、有治理”的工程流程。
+
+## 适用场景
+
+- 你的项目已经有代码仓库，但 AI 协作过程主要靠聊天记录、口头约定或零散脚本
+- 你希望同一个项目同时支持 Codex、Claude Code、Cursor、OpenCode 等多个客户端
+- 你希望把任务、handoff、evidence、tool registry 沉淀成仓库资产，而不是绑定到某个 IDE
+
+## ADS 会给项目带来什么
+
+- 一个统一的 **Agent 工作空间**：`.ai/`、`.agent/`、`tools/`、`skills/`
+- 一套稳定的 **任务与交接协议**：task、handoff、request、qa、memory、spec
+- 一组可直接运行的 **自动化脚本**：doctor、resume、handoff draft、evidence capture、tool sync、MCP server
+- 一个可持续演进的 **团队协作控制面**：人类开发者、CLI Agent、IDE Agent 都按同一套约定工作
+
+## 10 分钟落地路径
+
+### 1. 植入 ADS 骨架
+
+在 ADS 仓库执行：
+
+```bash
+python3 scripts/ads_init.py /path/to/your-project
+```
+
+完成后，宿主仓库会获得：
+
+- `README_AGENT.md`
+- `.agent/identity.json`
+- `.agent/docs/`
+- `.ai/START_HERE.md`
+- `tools/toolset.json`
+- `scripts/ads_doctor.py`、`scripts/ads_resume.py`、`scripts/ads_handoff_draft.py` 等基础脚本
+
+### 2. 补齐宿主项目信息
+
+初始化后，优先修改这几个文件：
+
+- `README_AGENT.md`
+  说明本项目是什么、当前阶段是什么、Agent 先读什么文档
+- `.agent/identity.json`
+  定义项目目标、约束、默认验证命令、关键角色
+- `.agent/constitution.md`
+  写清楚不能破坏的业务/架构规则
+- `.ai/START_HERE.md`
+  作为当前仓库多 Agent 协作入口
+
+### 3. 建立第一条真实任务链路
+
+推荐立即用一次真实迭代验证 ADS，而不是只复制模板：
+
+1. 从 `templates/task.md` 生成一个真实任务
+2. 在执行过程中记录 evidence
+3. 结束时生成 handoff
+4. 由另一个人或 Agent 根据 handoff 接续
+5. 用 QA 或 integration review 做 PASS/FAIL 闭环
+
+如果想先看参考样例，直接阅读 [`examples/README.md`](../../examples/README.md)。
+
+### 4. 接入工具注册与客户端
+
+推荐顺序：
+
+1. 维护 `tools/toolset.json`
+2. 为项目 skill 增加 `skills/<name>/manifest.json`
+3. 运行 `python3 scripts/sync-tools.py`
+4. 参考 [`client-adapters/README.md`](client-adapters/README.md) 为 Claude Code / Codex / Cursor / OpenCode 做入口映射
+
+### 5. 接入最小 CI
+
+将仓库中的 [`.github/workflows/ads-checks.yml.example`](../../.github/workflows/ads-checks.yml.example) 复制为宿主项目工作流，并按实际依赖调整：
+
+- `ads_doctor.py`：检查 ADS 接入完整性和漂移
+- `validate_ads.py`：检查 task / handoff / memory / request / qa / toolset
+- 宿主项目自己的 lint / test / build
+
+### 6. 做一次自检
+
+在宿主仓库运行：
+
+```bash
+python3 scripts/ads_doctor.py
+python3 scripts/validate_ads.py
+```
+
+如果这两步都通过，说明 ADS 基本接入完成，可以开始把真实工作流迁移到这套协议上。
+
+## 推荐接入节奏
+
+### Day 1
+
+- 完成骨架初始化
+- 让所有参与协作的人先读 `README_AGENT.md`
+- 用一个真实小任务跑通 task -> handoff -> QA
+
+### Week 1
+
+- 将项目内已有高频协作任务抽成 skill
+- 建立 `tools/toolset.json` 与 manifest 的同步机制
+- 让至少两个客户端接入同一套 ADS 工作区
+
+### Week 2+
+
+- 为关键流程补充 CI
+- 把常见 blocked 情况、integration review、spec sync 固化为标准 skill
+- 逐步沉淀 `.ai/memory/`、`.ai/specs/`、`.ai/patterns/`
+
+## 接入时最常见的错误
+
+- 只复制模板，不用真实任务验证
+- 仍然依赖聊天历史，而不写 handoff
+- 让多个 Agent 同时直接改同一组文件，没有单写者边界
+- 把工具能力只写在某个客户端私有配置里，没有回写 `toolset.json`
+- 只有“做完了”的描述，没有 evidence 和 QA 结论
+
+## 落地检查清单
+
+- [ ] 宿主仓库已有 `README_AGENT.md`
+- [ ] `README_AGENT.md` 明确首读顺序
+- [ ] `.agent/identity.json` 已填写真实 verify commands
+- [ ] `.ai/START_HERE.md` 已根据宿主项目改写
+- [ ] `tools/toolset.json` 已纳入项目自有工具
+- [ ] 至少有 1 条真实 task 与 handoff
+- [ ] `python3 scripts/ads_doctor.py` 通过
+- [ ] `python3 scripts/validate_ads.py` 通过
+- [ ] 已为主要客户端补齐 adapter 配置
+- [ ] 已决定哪些流程进入 CI
+
+## 继续阅读
+
+- [`../00-overview.md`](../00-overview.md)
+- [`../04-handoff-and-tasks.md`](../04-handoff-and-tasks.md)
+- [`client-adapters/README.md`](client-adapters/README.md)
+- [`../../examples/README.md`](../../examples/README.md)

@@ -1,68 +1,99 @@
-# Agent 开发规范（ADS）
+# Agent Development Specification
 
-| 项目 | 内容 |
-|------|------|
-| **中文名** | Agent 开发规范 |
-| **英文名** | **Agent Development Specification** |
-| **缩写** | **ADS** |
+ADS 是一套面向真实开发项目的 **Agent 工程协同规范与落地工具包**。它解决的不是“如何写一个提示词”，而是当多人类开发者、多个 Agent、多个客户端同时参与项目时，如何用一套 repo-native 的方式把 **任务、交接、证据、工具注册、共享记忆、最小治理** 固化到代码仓库里。
 
-本目录是一套**与具体业务仓库解耦**的通用模板：约定多 Agent / 多客户端（IDE、CLI、团队编排工具）协作时的**目录、契约、交接、证据、最小治理与共享记忆**，可与 [UAW](docs/02-uaw-mapping.md) 式工作空间及 **MCP** 工具链对齐。
+它适合这些团队：
 
-## 快速开始
+- 已经在用 Codex、Claude Code、Cursor、OpenCode 或自研 Agent，但协作过程仍然主要依赖聊天历史
+- 希望把 Agent 能力接入现有业务项目，而不是另建一套平台
+- 希望跨客户端复用同一套工具注册、任务协议和 handoff 机制
 
-1. 运行 `python3 scripts/ads_init.py /path/to/your-project`，将最小可运行 ADS 骨架植入目标仓库。
-2. 让参与者**首先阅读**根目录 [`README_AGENT.md`](README_AGENT.md)。
-3. 按 [`docs/`](docs/) 索引阅读原则与落地步骤。
-4. 从 [`templates/`](templates/) 与 [`.ai/templates/`](.ai/templates/) 复制范例到业务仓库并改名使用。
-5. 参考 [`examples/`](examples/) 中的**完整案例**（任务 → 共享改动 → 交接 → 记忆对象 → CLI / knowledge pack）走一遍流程。
+## ADS 解决什么问题
 
-初始化完成后，建议在目标仓库执行 `python3 scripts/ads_doctor.py` 做一次接入自检。
+典型失败模式包括：
 
-## 目录结构
+- 会话一断，上下文就断，后续 Agent 只能从头猜
+- 多个 Agent 同时改同一批文件，缺少边界，返工和冲突频发
+- “完成”只是口头完成，没有 evidence、没有 QA、没有回溯依据
+- 能力只藏在某个客户端配置里，换一个工具就失效
+
+ADS 把这些问题收敛为一套简单但可执行的资产：
+
+- `README_AGENT.md` 作为仓库级自举入口
+- `.ai/` 作为协作工作区
+- `.agent/` 作为工程元数据与规范镜像
+- `tools/toolset.json` + `skills/*/manifest.json` 作为统一工具注册层
+- task / handoff / request / qa / memory / spec 作为标准协议面
+- doctor / resume / handoff draft / evidence capture / MCP server 作为自动化执行面
+
+## 你能直接获得什么
+
+- 一个可以植入任何项目的 ADS 骨架初始化器：[`scripts/ads_init.py`](scripts/ads_init.py)
+- 一套接入与一致性检查能力：[`scripts/ads_doctor.py`](scripts/ads_doctor.py)、[`scripts/validate_ads.py`](scripts/validate_ads.py)
+- 一套让跨会话续做更稳定的辅助脚本：`ads_resume`、`ads_handoff_draft`、`ads_evidence_capture`
+- 一套可移植的 skill 体系：task decomposition、handoff writing、blocked triage、spec sync、integration review、innovation capture
+- 一套面向多客户端的接入思路：Claude Code / Codex CLI / Cursor / OpenCode
+
+## 10 分钟接入路径
+
+1. 在 ADS 仓库执行 `python3 scripts/ads_init.py /path/to/your-project`。
+2. 让所有参与协作的人先阅读宿主仓库根部的 [`README_AGENT.md`](README_AGENT.md)。
+3. 修改宿主仓库的 `.agent/identity.json`、`.agent/constitution.md`、`.ai/START_HERE.md`。
+4. 用一个真实任务跑通 task -> evidence -> handoff -> QA。
+5. 在宿主仓库执行 `python3 scripts/ads_doctor.py` 和 `python3 scripts/validate_ads.py`。
+6. 按需接入 [`docs/guides/client-adapters/README.md`](docs/guides/client-adapters/README.md) 中的客户端适配说明。
+
+更细的落地路径见 [`docs/guides/adoption-playbook.md`](docs/guides/adoption-playbook.md)。
+
+## 这套仓库包含什么
 
 ```
 agent-dev-spec/
-├── README.md                 # 本文件
-├── README_AGENT.md           # 自举入口（复制到业务仓库根）
-├── docs/                     # 给人看的规范说明
-├── templates/                # 任务、交接、QA 等片段模板
-├── .agent/                   # 工程元数据示例（identity / 客户端映射）
-├── tools/                    # toolset / MCP 配置约定与示例
-├── skills/                   # Skill + manifest 示例
-├── .ai/                      # 协作区示例（任务、handoffs、patterns、requests、qa、memory）
-├── scripts/                  # 校验、上下文包、健康报告、知识 freshness 脚本
-└── examples/                 # 端到端模版案例（虚构小迭代）
+├── README.md
+├── README_AGENT.md
+├── docs/
+├── templates/
+├── .agent/
+├── .ai/
+├── tools/
+├── skills/
+├── scripts/
+└── examples/
 ```
 
-## 文档索引
+关键部分：
 
-见 [`docs/README.md`](docs/README.md)。
+- [`docs/`](docs/)：协议说明、演进背景、客户端适配文档
+- [`templates/`](templates/)：task、handoff、request、QA、memory 模板
+- [`scripts/`](scripts/)：初始化、校验、续做、handoff 草稿、证据捕获、MCP 服务
+- [`skills/`](skills/)：可复用的 operational skills
+- [`examples/`](examples/)：完整案例链路
 
-## 当前已实现的最小能力
+## 推荐阅读顺序
 
-- 任务 / 交接模板增强：`trace_id`、`updated_at`、结构化 evidence、共享改动升级
-- `ads_init.py`：将 ADS 最小工作区快速植入其他项目
-- `validate_ads.py`：校验 task / handoff / memory / request / qa / pattern / toolset
-- `ads_doctor.py`：检查接入仓库的自举完整性、task/handoff 对齐、toolset/manifest 漂移
-- `ads_resume.py`：从 task / handoff / change proposal / constitution 生成续做上下文摘要
-- `ads_handoff_draft.py`：从 task 元数据 + git diff 生成 handoff 草稿
-- `ads_evidence_capture.py`：执行验证命令并输出标准 evidence 表格行
-- `sync-tools.py`：同步 `skills/*/manifest.json` 与 `tools/toolset.json`，统一工具注册
-- `ads_mcp_server.py`：把 ADS 高价值脚本 / skills 暴露为 MCP stdio tools，供 Cursor / Codex / OpenCode 统一调用
-- `build_context_pack.py`：生成 CLI 上下文包
-- `ads_health_report.py`：输出最小协作健康摘要
-- `build_knowledge_pack.py`：从 task / handoff / memory 生成知识消费包
-- `skills/task-decomposer/`：将 change proposal 拆成 role-oriented ADS task 草稿
-- `skills/handoff-writer/`：把 task + 当前 worktree 收敛成可落盘的 handoff 文件
-- `skills/blocked-triager/`：判断任务是 `NEEDS_CONTEXT`、`BLOCKED` 还是应升级为 `shared-change-request`
-- `skills/spec-syncer/`：推断受影响 spec，输出 `spec_update_status` 建议并可生成 `spec-delta`
-- `skills/integration-reviewer/`：基于 task + handoff 产出 QA PASS/FAIL 结论，覆盖 spec compliance 与 code quality 闸口
-- `skills/innovation-capture/`：把执行中出现的想法快速沉淀为标准 `Innovation Brief`
-- `skills/blocked-triager/`：判断任务是 `NEEDS_CONTEXT`、`BLOCKED` 还是应升级为 `shared-change-request`
-- `skills/spec-syncer/`：推断受影响 spec，输出 `spec_update_status` 建议并可生成 `spec-delta`
-- `check_stale_knowledge.py`：检查 memory freshness
-- `.ai/patterns/`：内置 team patterns
-- `.ai/memory/`：最小共享事实层
+- [`docs/00-overview.md`](docs/00-overview.md)
+- [`docs/01-principles.md`](docs/01-principles.md)
+- [`docs/04-handoff-and-tasks.md`](docs/04-handoff-and-tasks.md)
+- [`docs/guides/adoption-playbook.md`](docs/guides/adoption-playbook.md)
+- [`docs/guides/client-adapters/README.md`](docs/guides/client-adapters/README.md)
+- [`examples/README.md`](examples/README.md)
+
+## 产品化能力现状
+
+当前 ADS 已完成并稳定提供：
+
+- 协议层：task / handoff / request / qa / memory / spec / toolset 校验
+- 自动化层：doctor、resume、handoff draft、evidence capture、tool sync、MCP server
+- Skill 层：task-decomposer、handoff-writer、blocked-triager、spec-syncer、integration-reviewer、innovation-capture
+- 适配层：Claude Code、Codex CLI、Cursor、OpenCode
+- 示例层：端到端案例、上下文包、知识包、共享改动、QA 结论
+
+## 从这里开始
+
+- 接入现有项目：[`docs/guides/adoption-playbook.md`](docs/guides/adoption-playbook.md)
+- 查看所有文档：[`docs/README.md`](docs/README.md)
+- 查看客户端适配：[`docs/guides/client-adapters/README.md`](docs/guides/client-adapters/README.md)
+- 查看端到端案例：[`examples/README.md`](examples/README.md)
 
 ## 许可
 

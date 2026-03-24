@@ -1,0 +1,51 @@
+name: ADS Checks
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  ads-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install optional ADS test dependencies
+        run: |
+          if [ -f requirements-dev.txt ]; then
+            python -m pip install --upgrade pip
+            pip install -r requirements-dev.txt
+          fi
+
+      - name: Run ADS doctor
+        run: python3 scripts/ads_doctor.py
+
+      - name: Run ADS validation
+        run: python3 scripts/validate_ads.py
+
+      - name: Run project verification from ADS identity
+        run: |
+          python3 - <<'PY'
+          import json
+          import subprocess
+          from pathlib import Path
+
+          identity_path = Path(".agent/identity.json")
+          if not identity_path.exists():
+              raise SystemExit("missing .agent/identity.json")
+
+          identity = json.loads(identity_path.read_text(encoding="utf-8"))
+          commands = identity.get("standard_verify_commands", {})
+          for name, command in commands.items():
+              if not command or str(command).startswith("TODO:"):
+                  continue
+              print(f"[ads-checks] running {name}: {command}")
+              subprocess.run(command, shell=True, check=True)
+          PY

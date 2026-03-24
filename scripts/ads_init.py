@@ -17,6 +17,7 @@ COPY_MAP = {
     ".ai/templates/README.md": ".ai/templates/README.md",
     ".ai/patterns/frontend-backend-integration.md": ".ai/patterns/frontend-backend-integration.md",
     ".ai/patterns/human-agent-review.md": ".ai/patterns/human-agent-review.md",
+    ".github/workflows/ads-checks.yml.example": ".github/workflows/ads-checks.yml.example",
     ".agent/constitution.md": ".agent/constitution.md",
     ".agent/agent_map.yaml.example": ".agent/agent_map.yaml",
     "tools/mcp/README.md": "tools/mcp/README.md",
@@ -44,6 +45,8 @@ DOC_FILES = [
     "04-handoff-and-tasks.md",
     "05-multi-client-and-mesh.md",
     "06-evolution.md",
+    "07-iteration-log.md",
+    "guides/adoption-playbook.md",
     "guides/client-adapters/README.md",
     "guides/client-adapters/claude-code.md",
     "guides/client-adapters/codex-cli.md",
@@ -195,7 +198,7 @@ def render_readme_agent(source_root: Path) -> str:
     )
     text = text.replace(
         "打开本仓库 **`docs/00-overview.md`**，按索引阅读细则。",
-        "打开 **`.agent/docs/00-overview.md`**，按索引阅读细则。",
+        "优先打开 **`.agent/docs/guides/adoption-playbook.md`** 完成接入，再按 **`.agent/docs/00-overview.md`** 的索引阅读细则。",
     )
     return text
 
