@@ -26,6 +26,7 @@ class TestAdsInit:
         assert (target_root / ".agent" / "docs" / "00-overview.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "client-adapters" / "codex-cli.md").exists()
         assert (target_root / ".ai" / "START_HERE.md").exists()
+        assert (target_root / ".ai" / "innovations").exists()
         assert (target_root / "tools" / "toolset.json").exists()
         assert (target_root / "tools" / "mcp" / "ads-server.json.example").exists()
         assert (target_root / "scripts" / "ads_doctor.py").exists()

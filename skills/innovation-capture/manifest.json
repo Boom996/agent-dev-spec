@@ -1,0 +1,41 @@
+{
+  "tool_id": "ads.innovation_capture",
+  "name": "innovation-capture",
+  "version": "1.0.0",
+  "description": "Capture a low-friction Innovation Brief from task execution context and write it into the ADS innovations workspace.",
+  "entry": {
+    "type": "script",
+    "path": "./run.py",
+    "interpreter": "python3"
+  },
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "task_path": {
+        "type": "string",
+        "description": "Path to the ADS task markdown file that triggered the idea"
+      },
+      "title": {
+        "type": "string",
+        "description": "Short innovation title"
+      },
+      "summary": {
+        "type": "string",
+        "description": "1-2 paragraph idea summary"
+      },
+      "trigger": {
+        "type": "string",
+        "description": "Context that triggered the idea"
+      },
+      "judgement": {
+        "type": "string",
+        "description": "Submitter's initial assessment"
+      },
+      "output": {
+        "type": "string",
+        "description": "Optional output path for the generated innovation brief"
+      }
+    },
+    "required": ["task_path", "title", "summary", "trigger", "judgement"]
+  }
+}

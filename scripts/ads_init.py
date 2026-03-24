@@ -54,6 +54,7 @@ GENERATED_DIRS = [
     ".ai/requests",
     ".ai/qa",
     ".ai/memory",
+    ".ai/innovations",
     ".ai/specs",
     "skills",
 ]

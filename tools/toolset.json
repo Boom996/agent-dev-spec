@@ -94,6 +94,16 @@
       "entrypoint": "scripts/ads_init.py"
     },
     {
+      "tool_id": "ads.innovation_capture",
+      "title": "innovation-capture",
+      "description": "Capture a low-friction Innovation Brief from task execution context and write it into the ADS innovations workspace.",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "skill",
+      "manifest": "skills/innovation-capture/manifest.json"
+    },
+    {
       "tool_id": "ads.integration_reviewer",
       "title": "integration-reviewer",
       "description": "Review ADS task and handoff artifacts for spec compliance and code quality readiness, then write a QA PASS/FAIL report.",

@@ -23,22 +23,37 @@ def extract_frontmatter_value(text: str, key: str) -> str | None:
     return match.group(1).strip() if match else None
 
 
+def extract_table_value(text: str, label: str) -> str | None:
+    pattern = rf"\|\s*\*\*{re.escape(label)}\*\*\s*\|\s*(.*?)\s*\|"
+    match = re.search(pattern, text)
+    if not match:
+        return None
+    value = match.group(1).strip()
+    if value.startswith("`") and value.endswith("`") and len(value) >= 2:
+        return value[1:-1].strip()
+    return value
+
+
+def extract_metadata_value(text: str, key: str) -> str | None:
+    return extract_frontmatter_value(text, key) or extract_table_value(text, key)
+
+
 def check_innovation(path: Path, today: date, warn_days: int) -> tuple[str | None, str]:
     """Return (message, status) where status is OVERDUE / SOON / OK."""
     text = read_text(path)
-    status = extract_frontmatter_value(text, "status") or ""
+    status = extract_metadata_value(text, "status") or ""
     # Terminal statuses need no action
     if status in TERMINAL_STATUSES:
         return None, "OK"
     # Non-proposed (evaluating) also not overdue
-    deadline_str = extract_frontmatter_value(text, "triage_deadline")
+    deadline_str = extract_metadata_value(text, "triage_deadline")
     if not deadline_str:
         return None, "OK"
     try:
         deadline = date.fromisoformat(deadline_str)
     except ValueError:
         return None, "OK"
-    triage_by = extract_frontmatter_value(text, "triage_by") or "unknown"
+    triage_by = extract_metadata_value(text, "triage_by") or "unknown"
     if today > deadline:
         delta = (today - deadline).days
         return f"overdue by {delta} day(s), triage_by={triage_by}", "OVERDUE"
