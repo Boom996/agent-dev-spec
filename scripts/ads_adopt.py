@@ -266,6 +266,8 @@ def collect_handoff_docs(target_root: Path) -> list[Path]:
 
 
 def infer_vision_one_liner(target_root: Path, context_docs: list[Path]) -> str:
+    quoted_candidates: list[str] = []
+    fallback_candidates: list[str] = []
     for path in context_docs:
         text = read_text(path)
         lines = [line.strip() for line in text.splitlines()]
@@ -275,13 +277,20 @@ def infer_vision_one_liner(target_root: Path, context_docs: list[Path]) -> str:
             if line.startswith(">"):
                 candidate = line[1:].strip().strip("`")
                 if candidate:
-                    return candidate
+                    quoted_candidates.append(candidate)
+                    continue
+            if line.endswith(":") or line.endswith("："):
+                continue
             if len(line) <= 120:
-                return line.strip("`")
+                fallback_candidates.append(line.strip("`"))
+    if quoted_candidates:
+        return quoted_candidates[0]
+    if fallback_candidates:
+        return fallback_candidates[0]
     return "用一句话描述产品或本仓库目标"
 
 
-def build_report(target_root: Path) -> AdoptionReport:
+def build_report(target_root: Path, project_name: str | None = None) -> AdoptionReport:
     nested_git_roots = detect_nested_git_roots(target_root)
     code_roots = detect_code_roots(target_root, nested_git_roots)
     primary = code_roots[0] if code_roots else CodeRoot(".", 0, [], {"test": "TODO: add your standard verify command"})
@@ -306,7 +315,7 @@ def build_report(target_root: Path) -> AdoptionReport:
     primary_context = relative_to(target_root, context_docs[0]) if context_docs else ".agent/docs/guides/project-adoption-report.md"
     return AdoptionReport(
         workspace_root=str(target_root),
-        project_name=target_root.name,
+        project_name=project_name or target_root.name,
         vision_one_liner=vision,
         primary_code_root=primary.path,
         additional_code_roots=[item.path for item in code_roots[1:4]],
@@ -617,8 +626,8 @@ def render_adoption_task(report: AdoptionReport) -> str:
     return "\n".join(lines) + "\n"
 
 
-def apply_adoption(target_root: Path, force: bool = False) -> tuple[AdoptionReport, ads_init.InitResult]:
-    report = build_report(target_root)
+def apply_adoption(target_root: Path, force: bool = False, project_name: str | None = None) -> tuple[AdoptionReport, ads_init.InitResult]:
+    report = build_report(target_root, project_name=project_name)
     existing_before = {
         target_root / "README_AGENT.md",
         target_root / ".agent" / "identity.json",
@@ -669,6 +678,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("target", type=Path, help="target repository root to analyze or adopt")
     parser.add_argument("--apply", action="store_true", help="bootstrap ADS into the target repository")
     parser.add_argument("--force", action="store_true", help="overwrite existing ADS files when applying")
+    parser.add_argument("--project-name", help="override the detected project name, useful when adopting into a sandbox copy")
     parser.add_argument("--format", choices=("markdown", "json"), default="markdown", help="report output format")
     return parser.parse_args()
 
@@ -677,12 +687,12 @@ def main() -> int:
     args = parse_args()
     target_root = args.target.resolve()
     if args.apply:
-        report, result = apply_adoption(target_root, force=args.force)
+        report, result = apply_adoption(target_root, force=args.force, project_name=args.project_name)
         print(render_report_markdown(report))
         ads_init.print_summary(result, target_root)
         return 0
 
-    report = build_report(target_root)
+    report = build_report(target_root, project_name=args.project_name)
     if args.format == "json":
         print(json.dumps(asdict(report), ensure_ascii=False, indent=2))
     else:

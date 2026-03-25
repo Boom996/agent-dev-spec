@@ -76,6 +76,14 @@ class TestAdsAdopt:
         assert "golutra_workspace" in report.existing_systems
         assert "agentgames" in report.nested_git_roots
         assert report.context_docs[0] == "docs/superpowers/specs/2026-03-24-agent-maze-project-guide.md"
+        assert report.vision_one_liner == "Web 端 2D、多 Agent 羁绊驱动的异步观察 RPG"
+
+    def test_build_report_accepts_project_name_override(self, tmp_path):
+        target_root = build_brownfield_repo(tmp_path)
+
+        report = ads_adopt.build_report(target_root, project_name="AgentGames")
+
+        assert report.project_name == "AgentGames"
 
     def test_apply_adoption_bootstraps_custom_project_files(self, tmp_path):
         target_root = build_brownfield_repo(tmp_path)
