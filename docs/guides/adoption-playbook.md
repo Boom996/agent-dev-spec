@@ -32,11 +32,20 @@ python3 scripts/ads_adopt.py /path/to/your-project
 python3 scripts/ads_adopt.py /path/to/your-project --apply
 ```
 
+如果你希望先把分析结果沉淀成文件，方便团队评审或让其他 Agent 读取：
+
+```bash
+python3 scripts/ads_adopt.py /path/to/your-project \
+  --report-file /tmp/ads-adoption-report.md \
+  --json-file /tmp/ads-adoption-report.json
+```
+
 完成后，宿主仓库会获得：
 
 - `README_AGENT.md`
 - `.agent/identity.json`
 - `.agent/docs/`
+- `.agent/adoption-report.json`
 - `.ai/START_HERE.md`
 - `tools/toolset.json`
 - `scripts/ads_doctor.py`、`scripts/ads_resume.py`、`scripts/ads_handoff_draft.py` 等基础脚本

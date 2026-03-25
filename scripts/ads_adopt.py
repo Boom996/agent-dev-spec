@@ -37,6 +37,7 @@ class CodeRoot:
 @dataclass
 class AdoptionReport:
     workspace_root: str
+    workspace_root_name: str
     project_name: str
     vision_one_liner: str
     primary_code_root: str
@@ -315,6 +316,7 @@ def build_report(target_root: Path, project_name: str | None = None) -> Adoption
     primary_context = relative_to(target_root, context_docs[0]) if context_docs else ".agent/docs/guides/project-adoption-report.md"
     return AdoptionReport(
         workspace_root=str(target_root),
+        workspace_root_name=target_root.name,
         project_name=project_name or target_root.name,
         vision_one_liner=vision,
         primary_code_root=primary.path,
@@ -340,6 +342,7 @@ def render_report_markdown(report: AdoptionReport) -> str:
         "# ADS Adoption Report",
         "",
         f"- workspace_root: `{report.workspace_root}`",
+        f"- workspace_root_name: `{report.workspace_root_name}`",
         f"- project_name: `{report.project_name}`",
         f"- vision_one_liner: {report.vision_one_liner}",
         f"- primary_code_root: `{report.primary_code_root}`",
@@ -359,7 +362,31 @@ def render_report_markdown(report: AdoptionReport) -> str:
     if report.risks:
         lines.extend(["", "## Risks"])
         lines.extend(f"- {item}" for item in report.risks)
+    lines.extend(
+        [
+            "",
+            "## Next Commands",
+            f"- Analyze only: `python3 scripts/ads_adopt.py {report.workspace_root}`",
+            f"- Apply ADS bootstrap: `python3 scripts/ads_adopt.py {report.workspace_root} --apply --project-name {report.project_name}`",
+            f"- Verify adopted repo: `python3 scripts/ads_doctor.py --repo-root {report.workspace_root}`",
+        ]
+    )
     return "\n".join(lines) + "\n"
+
+
+def render_report_json(report: AdoptionReport) -> str:
+    return json.dumps(asdict(report), ensure_ascii=False, indent=2) + "\n"
+
+
+def write_report_files(report: AdoptionReport, markdown_path: Path | None, json_path: Path | None) -> list[Path]:
+    written: list[Path] = []
+    if markdown_path:
+        write_text(markdown_path, render_report_markdown(report))
+        written.append(markdown_path)
+    if json_path:
+        write_text(json_path, render_report_json(report))
+        written.append(json_path)
+    return written
 
 
 def render_readme_agent(report: AdoptionReport) -> str:
@@ -371,7 +398,8 @@ def render_readme_agent(report: AdoptionReport) -> str:
         "",
         "## 本项目工作区约定",
         "",
-        f"- **ADS 根目录**：`{Path(report.workspace_root).name}/`",
+        f"- **项目名**：`{report.project_name}`",
+        f"- **工作区根目录**：`{report.workspace_root_name}/`",
         f"- **主代码根**：`{report.primary_code_root}`",
         "- **统一协作区**：`.ai/`、`.agent/`、`tools/`、`skills/`",
         "- **旧协作资产**：保留原有 docs / handoff / orchestration 资料，优先映射，不直接删除",
@@ -506,6 +534,7 @@ def render_project_adoption_report(report: AdoptionReport) -> str:
         "",
         f"- project_name: `{report.project_name}`",
         f"- workspace_root: `{report.workspace_root}`",
+        f"- workspace_root_name: `{report.workspace_root_name}`",
         f"- primary_code_root: `{report.primary_code_root}`",
         f"- vision_one_liner: {report.vision_one_liner}",
         "",
@@ -663,6 +692,10 @@ def apply_adoption(target_root: Path, force: bool = False, project_name: str | N
         render_project_adoption_report(report),
     )
     write_generated(
+        target_root / ".agent" / "adoption-report.json",
+        render_report_json(report),
+    )
+    write_generated(
         target_root / ".agent" / "docs" / "guides" / "legacy-workspace-mapping.md",
         render_legacy_mapping(report),
     )
@@ -680,6 +713,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--force", action="store_true", help="overwrite existing ADS files when applying")
     parser.add_argument("--project-name", help="override the detected project name, useful when adopting into a sandbox copy")
     parser.add_argument("--format", choices=("markdown", "json"), default="markdown", help="report output format")
+    parser.add_argument("--report-file", type=Path, help="optional path to write the markdown adoption report")
+    parser.add_argument("--json-file", type=Path, help="optional path to write the JSON adoption report")
     return parser.parse_args()
 
 
@@ -688,13 +723,15 @@ def main() -> int:
     target_root = args.target.resolve()
     if args.apply:
         report, result = apply_adoption(target_root, force=args.force, project_name=args.project_name)
+        write_report_files(report, args.report_file, args.json_file)
         print(render_report_markdown(report))
         ads_init.print_summary(result, target_root)
         return 0
 
     report = build_report(target_root, project_name=args.project_name)
+    write_report_files(report, args.report_file, args.json_file)
     if args.format == "json":
-        print(json.dumps(asdict(report), ensure_ascii=False, indent=2))
+        print(render_report_json(report), end="")
     else:
         print(render_report_markdown(report))
     return 0

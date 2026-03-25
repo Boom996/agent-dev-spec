@@ -67,6 +67,7 @@ class TestAdsAdopt:
         report = ads_adopt.build_report(target_root)
 
         assert report.project_name == "AgentGames"
+        assert report.workspace_root_name == "AgentGames"
         assert report.primary_code_root == "agentgames"
         assert report.verify_commands == {
             "lint": "pnpm --dir agentgames lint",
@@ -94,6 +95,7 @@ class TestAdsAdopt:
         assert report.primary_code_root == "agentgames"
         assert (target_root / "README_AGENT.md").exists()
         assert (target_root / ".agent" / "identity.json").exists()
+        assert (target_root / ".agent" / "adoption-report.json").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "project-adoption-report.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "legacy-workspace-mapping.md").exists()
         assert (target_root / ".ai" / "tasks" / "backlog" / "TASK-00000000-001-ads-adoption.md").exists()
@@ -104,8 +106,24 @@ class TestAdsAdopt:
         assert identity["docs_entry"]["ai_context"] == "docs/superpowers/specs/2026-03-24-agent-maze-project-guide.md"
 
         readme_agent = (target_root / "README_AGENT.md").read_text(encoding="utf-8")
+        assert "项目名" in readme_agent
         assert "agentgames" in readme_agent
         assert ".agent/docs/guides/legacy-workspace-mapping.md" in readme_agent
 
         findings = ads_doctor.run_doctor(target_root)
         assert findings == []
+
+    def test_write_report_files_emits_markdown_and_json(self, tmp_path):
+        target_root = build_brownfield_repo(tmp_path)
+        report = ads_adopt.build_report(target_root, project_name="AgentGames")
+        markdown_path = tmp_path / "reports" / "adoption.md"
+        json_path = tmp_path / "reports" / "adoption.json"
+
+        written = ads_adopt.write_report_files(report, markdown_path, json_path)
+
+        assert markdown_path in written
+        assert json_path in written
+        assert "## Next Commands" in markdown_path.read_text(encoding="utf-8")
+        data = json.loads(json_path.read_text(encoding="utf-8"))
+        assert data["project_name"] == "AgentGames"
+        assert data["workspace_root_name"] == "AgentGames"
