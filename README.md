@@ -29,6 +29,7 @@ ADS 把这些问题收敛为一套简单但可执行的资产：
 ## 你能直接获得什么
 
 - 一个可以植入任何项目的 ADS 骨架初始化器：[`scripts/ads_init.py`](scripts/ads_init.py)
+- 一个面向存量项目的 ADS 自动接入器：`scripts/ads_adopt.py`
 - 一套接入与一致性检查能力：[`scripts/ads_doctor.py`](scripts/ads_doctor.py)、[`scripts/validate_ads.py`](scripts/validate_ads.py)
 - 一套让跨会话续做更稳定的辅助脚本：`ads_resume`、`ads_handoff_draft`、`ads_evidence_capture`
 - 一套可移植的 skill 体系：task decomposition、handoff writing、blocked triage、spec sync、integration review、innovation capture
@@ -36,12 +37,13 @@ ADS 把这些问题收敛为一套简单但可执行的资产：
 
 ## 10 分钟接入路径
 
-1. 在 ADS 仓库执行 `python3 scripts/ads_init.py /path/to/your-project`。
-2. 让所有参与协作的人先阅读宿主仓库根部的 [`README_AGENT.md`](README_AGENT.md)。
-3. 修改宿主仓库的 `.agent/identity.json`、`.agent/constitution.md`、`.ai/START_HERE.md`。
-4. 用一个真实任务跑通 task -> evidence -> handoff -> QA。
-5. 在宿主仓库执行 `python3 scripts/ads_doctor.py` 和 `python3 scripts/validate_ads.py`。
-6. 按需接入 [`docs/guides/client-adapters/README.md`](docs/guides/client-adapters/README.md) 中的客户端适配说明。
+1. 如果是新项目或干净仓库，执行 `python3 scripts/ads_init.py /path/to/your-project`。
+2. 如果是已有协作资产的存量项目，先执行 `python3 scripts/ads_adopt.py /path/to/your-project` 分析，再用 `--apply` 自动写入 ADS 骨架。
+3. 让所有参与协作的人先阅读宿主仓库根部的 [`README_AGENT.md`](README_AGENT.md)。
+4. 修改宿主仓库的 `.agent/identity.json`、`.agent/constitution.md`、`.ai/START_HERE.md`。
+5. 用一个真实任务跑通 task -> evidence -> handoff -> QA。
+6. 在宿主仓库执行 `python3 scripts/ads_doctor.py` 和 `python3 scripts/validate_ads.py`。
+7. 按需接入 [`docs/guides/client-adapters/README.md`](docs/guides/client-adapters/README.md) 中的客户端适配说明。
 
 更细的落地路径见 [`docs/guides/adoption-playbook.md`](docs/guides/adoption-playbook.md)。
 

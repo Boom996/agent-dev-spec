@@ -25,6 +25,13 @@
 python3 scripts/ads_init.py /path/to/your-project
 ```
 
+如果目标项目已经有自己的文档、handoff、Agent 入口或多层目录结构，先运行自动分析，再决定是否自动写入：
+
+```bash
+python3 scripts/ads_adopt.py /path/to/your-project
+python3 scripts/ads_adopt.py /path/to/your-project --apply
+```
+
 完成后，宿主仓库会获得：
 
 - `README_AGENT.md`
