@@ -125,10 +125,22 @@ python3 scripts/ads_evidence_capture.py \
 其中：
 
 - `ads_explain.py` 用来确认“这个仓库为什么使用 ADS、先看什么、下一步做什么”
+- `ads_dashboard.py` 用来本地打开项目状态面板，快速查看概览、当前重点、风险和健康情况
 - `ads_doctor.py` 用来确认结构是否齐全
 - `validate_ads.py` 用来确认协议文件是否合法
 
 如果这三步都通过，说明 ADS 基本接入完成，可以开始把真实工作流迁移到这套协议上。
+
+如果你希望团队成员或新加入的人更直观地理解项目现状，推荐再启动：
+
+```bash
+python3 scripts/ads_dashboard.py
+```
+
+默认会在本地启动网页服务，提供：
+
+- 首页概览
+- 统一详情页（任务 / 风险 / 健康）
 
 ## 推荐接入节奏
 

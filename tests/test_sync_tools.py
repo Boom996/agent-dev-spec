@@ -56,6 +56,7 @@ class TestSyncTools:
         toolset = sync_tools.sync_toolset(tmp_path)
 
         tool_ids = {tool["tool_id"] for tool in toolset["tools"]}
+        assert "ads.dashboard" in tool_ids
         assert "ads.explain" in tool_ids
         assert "ads.resume" in tool_ids
         assert "ads.sync_tools" in tool_ids

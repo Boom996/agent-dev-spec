@@ -32,6 +32,16 @@ CORE_SCRIPT_TOOLS = [
         "entrypoint": "scripts/ads_doctor.py",
     },
     {
+        "tool_id": "ads.dashboard",
+        "title": "ADS Dashboard",
+        "description": "Serve a lightweight local web dashboard for project overview, current focus, risks, and health status.",
+        "owner": "platform",
+        "risk_level": "low",
+        "version": "1.0.0",
+        "source": "script",
+        "entrypoint": "scripts/ads_dashboard.py",
+    },
+    {
         "tool_id": "ads.explain",
         "title": "ADS Explain",
         "description": "Generate a plain-language first-run brief so humans and agents can quickly understand the project mission, collaboration status, and next steps.",

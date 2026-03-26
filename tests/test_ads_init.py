@@ -36,6 +36,7 @@ class TestAdsInit:
         assert (target_root / ".github" / "workflows" / "ads-checks.yml.example").exists()
         assert (target_root / "tools" / "toolset.json").exists()
         assert (target_root / "tools" / "mcp" / "ads-server.json.example").exists()
+        assert (target_root / "scripts" / "ads_dashboard.py").exists()
         assert (target_root / "scripts" / "ads_doctor.py").exists()
         assert (target_root / "scripts" / "ads_explain.py").exists()
         assert (target_root / "scripts" / "ads_escalation_draft.py").exists()
@@ -48,6 +49,7 @@ class TestAdsInit:
 
         toolset = json.loads((target_root / "tools" / "toolset.json").read_text(encoding="utf-8"))
         tool_ids = {tool["tool_id"] for tool in toolset["tools"]}
+        assert "ads.dashboard" in tool_ids
         assert "ads.doctor" in tool_ids
         assert "ads.explain" in tool_ids
         assert "ads.escalation_draft" in tool_ids

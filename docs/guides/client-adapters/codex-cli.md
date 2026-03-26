@@ -39,6 +39,12 @@ python3 scripts/ads_resume.py .ai/tasks/active/<task-id>.md
 python3 scripts/ads_explain.py
 ```
 
+如果你想直接在本地网页里查看项目概览，再跑：
+
+```bash
+python3 scripts/ads_dashboard.py
+```
+
 ## 推荐命令工作流
 
 ### 1. 接入新仓库

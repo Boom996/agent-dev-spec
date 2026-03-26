@@ -33,6 +33,7 @@ ADS 把这些问题收敛为一套简单但可执行的资产：
 - 一个面向存量项目的 ADS 自动接入器：`scripts/ads_adopt.py`，支持分析、自动写入、导出 markdown/json 接入报告
 - 一套接入与一致性检查能力：[`scripts/ads_doctor.py`](scripts/ads_doctor.py)、[`scripts/validate_ads.py`](scripts/validate_ads.py)
 - 一个面向人和 Agent 的首读摘要器：`scripts/ads_explain.py`
+- 一个本地网页状态面板：`scripts/ads_dashboard.py`
 - 一套让跨会话续做更稳定的辅助脚本：`ads_resume`、`ads_handoff_draft`、`ads_evidence_capture`
 - 一套可渐进启用的 evidence observability 能力：成本、耗时、重试次数
 - 一套正式的 blocked / needs-context 升级流程：`ads_escalation_draft` + `.ai/escalations/`
@@ -48,8 +49,9 @@ ADS 把这些问题收敛为一套简单但可执行的资产：
 4. 修改宿主仓库的 `.agent/identity.json`、`.agent/constitution.md`、`.ai/START_HERE.md`。
 5. 用一个真实任务跑通 task -> evidence -> handoff -> QA。
 6. 在宿主仓库先执行 `python3 scripts/ads_explain.py`，确认项目使命、协作状态与首读顺序。
-7. 再执行 `python3 scripts/ads_doctor.py` 和 `python3 scripts/validate_ads.py`。
-8. 按需接入 [`docs/guides/client-adapters/README.md`](docs/guides/client-adapters/README.md) 中的客户端适配说明。
+7. 如需本地可视化状态面板，执行 `python3 scripts/ads_dashboard.py`。
+8. 再执行 `python3 scripts/ads_doctor.py` 和 `python3 scripts/validate_ads.py`。
+9. 按需接入 [`docs/guides/client-adapters/README.md`](docs/guides/client-adapters/README.md) 中的客户端适配说明。
 
 更细的落地路径见 [`docs/guides/adoption-playbook.md`](docs/guides/adoption-playbook.md)。
 
@@ -94,6 +96,7 @@ agent-dev-spec/
 - 协议层：task / handoff / request / qa / memory / spec / toolset 校验
 - 自动化层：doctor、resume、handoff draft、escalation draft、evidence capture、tool sync、MCP server
 - 入门层：`ads_explain` 首读摘要
+- 可视化层：`ads_dashboard` 本地网页面板（概览页 + 统一详情页）
 - 观测层：evidence 主表 + telemetry 子表（cost / latency / retry）
 - Skill 层：task-decomposer、handoff-writer、blocked-triager、spec-syncer、integration-reviewer、innovation-capture
 - 适配层：Claude Code、Codex CLI、Cursor、OpenCode

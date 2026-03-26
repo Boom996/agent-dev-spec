@@ -27,6 +27,7 @@ COPY_MAP = {
     "scripts/build_context_pack.py": "scripts/build_context_pack.py",
     "scripts/build_knowledge_pack.py": "scripts/build_knowledge_pack.py",
     "scripts/check_stale_knowledge.py": "scripts/check_stale_knowledge.py",
+    "scripts/ads_dashboard.py": "scripts/ads_dashboard.py",
     "scripts/ads_health_report.py": "scripts/ads_health_report.py",
     "scripts/ads_doctor.py": "scripts/ads_doctor.py",
     "scripts/ads_explain.py": "scripts/ads_explain.py",
@@ -118,6 +119,16 @@ def build_toolset() -> str:
         "version": "1.0",
         "registry": "project-local",
         "tools": [
+            {
+                "tool_id": "ads.dashboard",
+                "title": "ADS Dashboard",
+                "description": "Serve a lightweight local web dashboard for project overview, current focus, risks, and health status.",
+                "owner": "platform",
+                "risk_level": "low",
+                "version": "1.0.0",
+                "source": "script",
+                "entrypoint": "scripts/ads_dashboard.py",
+            },
             {
                 "tool_id": "ads.doctor",
                 "title": "ADS Doctor",

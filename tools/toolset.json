@@ -34,6 +34,16 @@
       "entrypoint": "scripts/build_context_pack.py"
     },
     {
+      "tool_id": "ads.dashboard",
+      "title": "ADS Dashboard",
+      "description": "Serve a lightweight local web dashboard for project overview, current focus, risks, and health status.",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "script",
+      "entrypoint": "scripts/ads_dashboard.py"
+    },
+    {
       "tool_id": "ads.doctor",
       "title": "ADS Doctor",
       "description": "Check ADS bootstrap completeness, task/handoff alignment, and tool drift.",
