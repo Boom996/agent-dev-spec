@@ -8,6 +8,7 @@ import json
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
 
+import ads_explain
 import ads_init
 
 
@@ -332,6 +333,7 @@ def build_report(target_root: Path, project_name: str | None = None) -> Adoption
         docs_entry={
             "readme_agent": "README_AGENT.md",
             "ai_context": primary_context,
+            "project_brief": ".agent/docs/guides/project-brief.md",
             "start_here": ".ai/START_HERE.md",
         },
     )
@@ -391,6 +393,7 @@ def write_report_files(report: AdoptionReport, markdown_path: Path | None, json_
 
 def render_readme_agent(report: AdoptionReport) -> str:
     context_doc = report.docs_entry.get("ai_context", ".agent/docs/guides/project-adoption-report.md")
+    project_brief = report.docs_entry.get("project_brief", ".agent/docs/guides/project-brief.md")
     lines = [
         "# Agent 自举入口（ADS）",
         "",
@@ -407,12 +410,13 @@ def render_readme_agent(report: AdoptionReport) -> str:
         "## 首读顺序",
         "",
         "1. **本文件**（`README_AGENT.md`）",
-        f"2. **项目主上下文**（`{context_doc}`）",
-        "3. **迁移映射说明**（`.agent/docs/guides/legacy-workspace-mapping.md`）",
-        "4. **ADS 当前协作入口**（`.ai/START_HERE.md`）",
+        f"2. **项目首读摘要**（`{project_brief}`）",
+        f"3. **项目主上下文**（`{context_doc}`）",
+        "4. **迁移映射说明**（`.agent/docs/guides/legacy-workspace-mapping.md`）",
+        "5. **ADS 当前协作入口**（`.ai/START_HERE.md`）",
     ]
     if report.legacy_handoffs:
-        lines.append(f"5. **历史交接文档**（`{report.legacy_handoffs[0]}`）")
+        lines.append(f"6. **历史交接文档**（`{report.legacy_handoffs[0]}`）")
     lines.extend(
         [
             "",
@@ -433,6 +437,7 @@ def render_readme_agent(report: AdoptionReport) -> str:
             "",
             "## 不确定时",
             "",
+            "- 先看 `.agent/docs/guides/project-brief.md`",
             "- 先看 `.agent/docs/guides/project-adoption-report.md`",
             "- 再看 `.agent/docs/00-overview.md` 与 `.agent/docs/guides/adoption-playbook.md`",
         ]
@@ -469,6 +474,7 @@ def render_start_here(report: AdoptionReport) -> str:
         "",
         "## 迁移上下文",
         "",
+        f"- 项目首读摘要：`{report.docs_entry.get('project_brief', '.agent/docs/guides/project-brief.md')}`",
         f"- 项目接入报告：`.agent/docs/guides/project-adoption-report.md`",
         f"- 旧工作区映射：`.agent/docs/guides/legacy-workspace-mapping.md`",
         f"- 当前主上下文：`{report.docs_entry.get('ai_context', '.agent/docs/guides/project-adoption-report.md')}`",
@@ -687,6 +693,10 @@ def apply_adoption(target_root: Path, force: bool = False, project_name: str | N
     write_generated(target_root / ".agent" / "identity.json", json.dumps(identity, ensure_ascii=False, indent=2) + "\n")
     write_generated(target_root / ".agent" / "constitution.md", render_constitution(report))
     write_generated(target_root / ".ai" / "START_HERE.md", render_start_here(report))
+    write_generated(
+        target_root / ".agent" / "docs" / "guides" / "project-brief.md",
+        ads_explain.build_explanation(target_root) + "\n",
+    )
     write_generated(
         target_root / ".agent" / "docs" / "guides" / "project-adoption-report.md",
         render_project_adoption_report(report),

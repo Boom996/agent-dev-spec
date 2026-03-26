@@ -56,6 +56,23 @@ def load_project_name(repo_root: Path) -> str:
     return repo_root.name
 
 
+def load_docs_entry(repo_root: Path) -> dict[str, str]:
+    identity = repo_root / ".agent" / "identity.json"
+    if not identity.exists():
+        return {}
+    text = read_text(identity)
+    docs_entry_match = re.search(r'"docs_entry"\s*:\s*\{(.*?)\n\s*\}', text, flags=re.DOTALL)
+    if not docs_entry_match:
+        return {}
+    block = docs_entry_match.group(1)
+    entries: dict[str, str] = {}
+    for key in ("readme_agent", "ai_context", "project_brief", "start_here"):
+        match = re.search(rf'"{key}"\s*:\s*"([^"]+)"', block)
+        if match:
+            entries[key] = match.group(1)
+    return entries
+
+
 def load_mission(repo_root: Path) -> str:
     constitution = repo_root / ".agent" / "constitution.md"
     if not constitution.exists():
@@ -77,6 +94,7 @@ def load_current_stage(repo_root: Path) -> str:
 def build_explanation(repo_root: Path = REPO_ROOT) -> str:
     workspace_status = infer_workspace_status(repo_root)
     project_name = load_project_name(repo_root)
+    docs_entry = load_docs_entry(repo_root)
     mission = load_mission(repo_root)
     current_stage = load_current_stage(repo_root)
     active_tasks = discover(repo_root, ".ai/tasks/active/*.md")
@@ -110,6 +128,10 @@ def build_explanation(repo_root: Path = REPO_ROOT) -> str:
         "- .ai/START_HERE.md" if (repo_root / ".ai" / "START_HERE.md").exists() else "- .ai/START_HERE.md (missing)",
         "- .agent/constitution.md" if (repo_root / ".agent" / "constitution.md").exists() else "- .agent/constitution.md (missing)",
     ]
+    if docs_entry.get("project_brief"):
+        lines.append(f"- {docs_entry['project_brief']}")
+    if docs_entry.get("ai_context"):
+        lines.append(f"- {docs_entry['ai_context']}")
 
     if active_tasks:
         lines.append(f"- {active_tasks[0].relative_to(repo_root).as_posix()}")

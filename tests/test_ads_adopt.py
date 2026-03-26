@@ -96,6 +96,7 @@ class TestAdsAdopt:
         assert (target_root / "README_AGENT.md").exists()
         assert (target_root / ".agent" / "identity.json").exists()
         assert (target_root / ".agent" / "adoption-report.json").exists()
+        assert (target_root / ".agent" / "docs" / "guides" / "project-brief.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "project-adoption-report.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "legacy-workspace-mapping.md").exists()
         assert (target_root / ".ai" / "tasks" / "backlog" / "TASK-00000000-001-ads-adoption.md").exists()
@@ -104,11 +105,19 @@ class TestAdsAdopt:
         assert identity["vision_one_liner"] == "Web 端 2D、多 Agent 羁绊驱动的异步观察 RPG"
         assert identity["standard_verify_commands"]["test"] == "pnpm --dir agentgames test"
         assert identity["docs_entry"]["ai_context"] == "docs/superpowers/specs/2026-03-24-agent-maze-project-guide.md"
+        assert identity["docs_entry"]["project_brief"] == ".agent/docs/guides/project-brief.md"
 
         readme_agent = (target_root / "README_AGENT.md").read_text(encoding="utf-8")
         assert "项目名" in readme_agent
         assert "agentgames" in readme_agent
+        assert ".agent/docs/guides/project-brief.md" in readme_agent
         assert ".agent/docs/guides/legacy-workspace-mapping.md" in readme_agent
+
+        project_brief = (target_root / ".agent" / "docs" / "guides" / "project-brief.md").read_text(encoding="utf-8")
+        assert "# ADS Project Brief" in project_brief
+        assert "- project: AgentGames" in project_brief
+        assert "docs/superpowers/specs/2026-03-24-agent-maze-project-guide.md" in project_brief
+        assert "python3 scripts/ads_doctor.py" in project_brief
 
         findings = ads_doctor.run_doctor(target_root)
         assert findings == []

@@ -43,6 +43,7 @@ ADS 把这些问题收敛为一套简单但可执行的资产：
 
 1. 如果是新项目或干净仓库，执行 `python3 scripts/ads_init.py /path/to/your-project`。
 2. 如果是已有协作资产的存量项目，先执行 `python3 scripts/ads_adopt.py /path/to/your-project` 分析；如需保留接入报告，可追加 `--report-file` / `--json-file`；确认后再用 `--apply` 自动写入 ADS 骨架。
+   完成后会自动生成项目级首读摘要：`.agent/docs/guides/project-brief.md`
 3. 让所有参与协作的人先阅读宿主仓库根部的 [`README_AGENT.md`](README_AGENT.md)。
 4. 修改宿主仓库的 `.agent/identity.json`、`.agent/constitution.md`、`.ai/START_HERE.md`。
 5. 用一个真实任务跑通 task -> evidence -> handoff -> QA。

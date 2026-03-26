@@ -73,6 +73,16 @@ python3 scripts/ads_adopt.py /path/to/your-project \
 4. 由另一个人或 Agent 根据 handoff 接续
 5. 用 QA 或 integration review 做 PASS/FAIL 闭环
 
+对于存量项目，执行 `ads_adopt.py --apply` 后还会自动生成：
+
+- `.agent/docs/guides/project-brief.md`
+
+这个 brief 的目的不是替代 README，而是让第一次进入仓库的人或 Agent 能快速理解：
+
+- 这个项目为什么接入 ADS
+- 当前应该先读什么
+- 下一步该执行什么命令
+
 如果想先看参考样例，直接阅读 [`examples/README.md`](../../examples/README.md)。
 
 ### 4. 接入工具注册与客户端
