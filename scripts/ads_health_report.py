@@ -37,6 +37,7 @@ class HandoffRecord:
     task_id: str
     updated_at: str
     evidence_complete: bool
+    telemetry_complete: bool
     approval_status: str
 
 
@@ -159,6 +160,10 @@ def parse_handoff(path: Path) -> HandoffRecord | None:
         re.MULTILINE,
     )
     evidence_complete = False
+    telemetry_pattern = re.compile(
+        r"^\|\s*`?([^|`]+)`?\s*\|\s*`?([^|`]*)`?\s*\|\s*`?([^|`]*)`?\s*\|\s*`?([^|`]*)`?\s*\|$",
+        re.MULTILINE,
+    )
     for match in row_pattern.finditer(evidence):
         item, executed_by, executed_at, result, artifact_paths, review_status = [part.strip() for part in match.groups()]
         if item == "evidence_item":
@@ -166,11 +171,21 @@ def parse_handoff(path: Path) -> HandoffRecord | None:
         if executed_by and executed_at and result not in {"", "pass / fail"} and artifact_paths and review_status not in {"", "pending / reviewed"}:
             evidence_complete = True
             break
+    telemetry_complete = False
+    if "Evidence telemetry" in evidence:
+        for match in telemetry_pattern.finditer(evidence):
+            item, duration_ms, cost_usd, retry_count = [part.strip() for part in match.groups()]
+            if item == "evidence_item":
+                continue
+            if duration_ms or cost_usd or retry_count:
+                telemetry_complete = True
+                break
     return HandoffRecord(
         path=path,
         task_id=strip_code(extract_table_value(text, "task_id")) or path.stem,
         updated_at=strip_code(extract_table_value(text, "updated_at")),
         evidence_complete=evidence_complete,
+        telemetry_complete=telemetry_complete,
         approval_status=strip_code(re.search(r"\*\*approval_status\*\*：(.+)", find_section(text, "Approval")).group(1).strip())
         if re.search(r"\*\*approval_status\*\*：(.+)", find_section(text, "Approval"))
         else "",
@@ -281,6 +296,11 @@ def build_report(
         task for task in tasks
         if task.task_id in handoff_by_task and not handoff_by_task[task.task_id].evidence_complete
     ]
+    missing_telemetry = [
+        task for task in tasks
+        if task.task_id in handoff_by_task and not handoff_by_task[task.task_id].telemetry_complete
+    ]
+    handoffs_with_telemetry = [handoff for handoff in handoffs if handoff.telemetry_complete]
     stale_tasks = [task for task in tasks if is_stale(task.updated_at, task.stale_after, now)]
     pending_approvals = [
         task for task in tasks
@@ -336,6 +356,8 @@ def build_report(
         f"- total_qas: {len(qas)}",
         f"- missing_handoff: {len(missing_handoff)}",
         f"- missing_evidence: {len(missing_evidence)}",
+        f"- handoffs_with_telemetry: {len(handoffs_with_telemetry)}",
+        f"- missing_telemetry: {len(missing_telemetry)}",
         f"- stale_tasks: {len(stale_tasks)}",
         f"- stale_memories: {len(stale_memories)}",
         f"- pending_approvals: {len(pending_approvals)}",
@@ -361,6 +383,15 @@ def build_report(
         for task in (missing_evidence or [])
     )
     if not missing_evidence:
+        lines.append("- none")
+
+    lines.append("")
+    lines.append("## Evidence Telemetry Coverage")
+    lines.extend(
+        f"- {task.task_id} — handoff exists but telemetry is still empty"
+        for task in (missing_telemetry or [])
+    )
+    if not missing_telemetry:
         lines.append("- none")
 
     lines.append("")

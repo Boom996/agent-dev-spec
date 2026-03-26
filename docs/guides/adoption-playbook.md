@@ -68,7 +68,7 @@ python3 scripts/ads_adopt.py /path/to/your-project \
 推荐立即用一次真实迭代验证 ADS，而不是只复制模板：
 
 1. 从 `templates/task.md` 生成一个真实任务
-2. 在执行过程中记录 evidence
+2. 在执行过程中记录 evidence；如果想衡量运行代价，同时补 telemetry（耗时 / 成本 / 重试）
 3. 结束时生成 handoff
 4. 由另一个人或 Agent 根据 handoff 接续
 5. 用 QA 或 integration review 做 PASS/FAIL 闭环
@@ -99,6 +99,16 @@ python3 scripts/ads_adopt.py /path/to/your-project \
 ```bash
 python3 scripts/ads_doctor.py
 python3 scripts/validate_ads.py
+```
+
+如果需要把验证代价一起落盘，可以顺手执行：
+
+```bash
+python3 scripts/ads_evidence_capture.py \
+  --item test \
+  --command "python3 -m pytest -q" \
+  --retry-count 1 \
+  --cost-usd 0.012500
 ```
 
 如果这两步都通过，说明 ADS 基本接入完成，可以开始把真实工作流迁移到这套协议上。

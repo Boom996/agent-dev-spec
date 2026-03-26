@@ -41,7 +41,20 @@
 - 可勾选验收标准
 - 明确 Evidence expectation
 - 结构化 evidence 表格
+- 可选的 Evidence telemetry 子表（`duration_ms` / `cost_usd` / `retry_count`）
 - `trace_id`、`updated_at`、`stale_after`
+
+如果团队已经开始关注验证代价，建议在 `Evidence expectation` 下补 telemetry 子表：
+
+| evidence_item | duration_ms | cost_usd | retry_count |
+|---------------|-------------|----------|-------------|
+| `test` | `1532` | `0.012500` | `1` |
+
+说明：
+
+- 主 evidence 表仍然是完成证明
+- telemetry 子表是运行观测补充，不替代主表
+- 适合记录命令耗时、模型或工具成本、重试次数
 
 ## CLI 一键上下文包（Codex 等）
 
@@ -64,6 +77,7 @@
 
 - `build_context_pack.py` 默认从 `.agent/identity.json`（或示例 identity）读取标准验证命令
 - 若提供 `--handoff`，上下文包会额外带上 handoff 状态与 `Memory refs`
+- `ads_health_report.py` 也会显示 handoff telemetry 覆盖情况
 
 ## Memory refs（最小原型）
 

@@ -94,6 +94,8 @@ def build_evidence_capture_args(arguments: JSON, repo_root: Path) -> list[str]:
     add_flag(args, "--executed-by", arguments.get("executed_by"))
     add_flag(args, "--artifact", arguments.get("artifact"))
     add_flag(args, "--append-to", arguments.get("append_to"))
+    add_flag(args, "--retry-count", arguments.get("retry_count"))
+    add_flag(args, "--cost-usd", arguments.get("cost_usd"))
     return args
 
 
@@ -238,6 +240,8 @@ SCRIPT_TOOL_SPECS: dict[str, ToolSpec] = {
                 "executed_by": {"type": "string"},
                 "artifact": {"type": "string"},
                 "append_to": {"type": "string"},
+                "retry_count": {"type": "integer"},
+                "cost_usd": {"type": "number"},
             },
             "required": ["item", "command"],
         },

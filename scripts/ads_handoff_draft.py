@@ -237,6 +237,18 @@ def build_handoff_draft(
     lines.extend(
         [
             "",
+            "**Evidence telemetry**：（可选，补充 cost / latency / retry）",
+            "",
+            "| evidence_item | duration_ms | cost_usd | retry_count |",
+            "|---------------|-------------|----------|-------------|",
+        ]
+    )
+    for item in evidence_names:
+        lines.append(f"| `{item}` |  |  |  |")
+
+    lines.extend(
+        [
+            "",
             "**附加说明**：",
             "",
             f"- Branch: `{git_branch(repo_root)}`",

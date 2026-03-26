@@ -224,6 +224,46 @@ class TestHandoffPhase1Fields:
             validate_ads.REPO_ROOT = original
         assert any("spec_update_status" in e for e in errors)
 
+    def test_valid_handoff_with_evidence_telemetry_passes(self, tmp_ads_repo):
+        content = self.VALID_HANDOFF_BASE.replace(
+            "**附加说明**：无",
+            """**Evidence telemetry**：（可选，补充 cost / latency / retry）
+
+        | evidence_item | duration_ms | cost_usd | retry_count |
+        |---------------|-------------|----------|-------------|
+        | `test` | `1532` | `0.012500` | `1` |
+
+        **附加说明**：无""",
+        )
+        path = write_file(tmp_ads_repo, ".ai/handoffs/TASK-004.md", content)
+        original = validate_ads.REPO_ROOT
+        validate_ads.REPO_ROOT = tmp_ads_repo
+        try:
+            errors = validate_ads.validate_handoff(path)
+        finally:
+            validate_ads.REPO_ROOT = original
+        assert errors == [], f"Unexpected errors: {errors}"
+
+    def test_invalid_evidence_telemetry_duration_returns_error(self, tmp_ads_repo):
+        content = self.VALID_HANDOFF_BASE.replace(
+            "**附加说明**：无",
+            """**Evidence telemetry**：（可选，补充 cost / latency / retry）
+
+        | evidence_item | duration_ms | cost_usd | retry_count |
+        |---------------|-------------|----------|-------------|
+        | `test` | `fast` | `0.012500` | `1` |
+
+        **附加说明**：无""",
+        )
+        path = write_file(tmp_ads_repo, ".ai/handoffs/TASK-005.md", content)
+        original = validate_ads.REPO_ROOT
+        validate_ads.REPO_ROOT = tmp_ads_repo
+        try:
+            errors = validate_ads.validate_handoff(path)
+        finally:
+            validate_ads.REPO_ROOT = original
+        assert any("duration_ms" in e for e in errors)
+
 
 class TestEscalationValidation:
     VALID_ESCALATION = """\

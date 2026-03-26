@@ -33,6 +33,26 @@ class TestAdsEvidenceCapture:
         assert "ok" in artifact_path.read_text(encoding="utf-8")
         assert "| `test` | Backend @ Codex |" in row
         assert "`artifacts/test.log`" in row
+        assert record["duration_ms"] >= 0
+
+    def test_capture_evidence_renders_telemetry_row(self, tmp_path):
+        command = f"{sys.executable} -c \"print('ok')\""
+
+        record = ads_evidence_capture.capture_evidence(
+            item="integration-test",
+            command=command,
+            repo_root=tmp_path,
+            cost_usd=0.125,
+            retry_count=2,
+        )
+
+        row = ads_evidence_capture.render_telemetry_row(record)
+
+        assert record["cost_usd"] == "0.125000"
+        assert record["retry_count"] == 2
+        assert "| `integration-test` |" in row
+        assert "| `0.125000` |" in row
+        assert "| `2` |" in row
 
     def test_capture_evidence_returns_fail_for_failing_command(self, tmp_path):
         command = f"{sys.executable} -c \"import sys; sys.exit(3)\""

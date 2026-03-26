@@ -62,8 +62,15 @@ python3 scripts/ads_handoff_draft.py .ai/tasks/active/<task-id>.md \
 ```bash
 python3 scripts/ads_evidence_capture.py \
   --item test \
-  --command "python3 -m pytest -q"
+  --command "python3 -m pytest -q" \
+  --retry-count 1 \
+  --cost-usd 0.012500
 ```
+
+脚本会输出：
+
+- 一条主 evidence row
+- 一条 telemetry row（`duration_ms / cost_usd / retry_count`）
 
 ### 5. 检查 registry 是否漂移
 

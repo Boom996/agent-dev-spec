@@ -25,6 +25,7 @@ ADS 把这些问题收敛为一套简单但可执行的资产：
 - `tools/toolset.json` + `skills/*/manifest.json` 作为统一工具注册层
 - task / handoff / request / qa / memory / spec 作为标准协议面
 - doctor / resume / handoff draft / evidence capture / MCP server 作为自动化执行面
+- `duration_ms` / `cost_usd` / `retry_count` 作为可选 evidence telemetry 层
 
 ## 你能直接获得什么
 
@@ -32,6 +33,7 @@ ADS 把这些问题收敛为一套简单但可执行的资产：
 - 一个面向存量项目的 ADS 自动接入器：`scripts/ads_adopt.py`，支持分析、自动写入、导出 markdown/json 接入报告
 - 一套接入与一致性检查能力：[`scripts/ads_doctor.py`](scripts/ads_doctor.py)、[`scripts/validate_ads.py`](scripts/validate_ads.py)
 - 一套让跨会话续做更稳定的辅助脚本：`ads_resume`、`ads_handoff_draft`、`ads_evidence_capture`
+- 一套可渐进启用的 evidence observability 能力：成本、耗时、重试次数
 - 一套正式的 blocked / needs-context 升级流程：`ads_escalation_draft` + `.ai/escalations/`
 - 一套可移植的 skill 体系：task decomposition、handoff writing、blocked triage、spec sync、integration review、innovation capture
 - 一套面向多客户端的接入思路：Claude Code / Codex CLI / Cursor / OpenCode
@@ -88,6 +90,7 @@ agent-dev-spec/
 
 - 协议层：task / handoff / request / qa / memory / spec / toolset 校验
 - 自动化层：doctor、resume、handoff draft、escalation draft、evidence capture、tool sync、MCP server
+- 观测层：evidence 主表 + telemetry 子表（cost / latency / retry）
 - Skill 层：task-decomposer、handoff-writer、blocked-triager、spec-syncer、integration-reviewer、innovation-capture
 - 适配层：Claude Code、Codex CLI、Cursor、OpenCode
 - 示例层：端到端案例、上下文包、知识包、共享改动、QA 结论

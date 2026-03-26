@@ -87,6 +87,22 @@ def write_file(base: Path, rel: str, content: str) -> Path:
 
 
 class TestAdsMcpServer:
+    def test_build_evidence_capture_args_supports_telemetry_fields(self):
+        args = ads_mcp_server.build_evidence_capture_args(
+            {
+                "item": "test",
+                "command": "python3 -m pytest -q",
+                "retry_count": 2,
+                "cost_usd": "0.125000",
+            },
+            repo_root=REPO_ROOT,
+        )
+
+        assert "--retry-count" in args
+        assert "2" in args
+        assert "--cost-usd" in args
+        assert "0.125000" in args
+
     def test_tools_list_exposes_core_ads_tools(self):
         response = ads_mcp_server.handle_request({"jsonrpc": "2.0", "id": 1, "method": "tools/list"}, repo_root=REPO_ROOT)
         assert response is not None

@@ -133,6 +133,9 @@ class TestAdsHandoffDraft:
         assert "| `notes.txt` | Changed in current worktree |" in draft
         assert "| `lint` | Backend @ CLI |  | pending | `artifacts/lint.txt` | pending |" in draft
         assert "| `test` | Backend @ CLI |  | pending | `artifacts/test.txt` | pending |" in draft
+        assert "**Evidence telemetry**：（可选，补充 cost / latency / retry）" in draft
+        assert "| evidence_item | duration_ms | cost_usd | retry_count |" in draft
+        assert "| `lint` |  |  |  |" in draft
         assert "| **spec_update_status** | `not_started` |" in draft
 
     def test_handoff_draft_honors_explicit_status_and_block_reason(self, tmp_path):

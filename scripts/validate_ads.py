@@ -85,6 +85,60 @@ def extract_memory_refs(section: str) -> list[str]:
     return refs
 
 
+def extract_pipe_table_rows(section: str, expected_columns: int) -> list[list[str]]:
+    rows: list[list[str]] = []
+    for line in section.splitlines():
+        stripped = line.strip()
+        if not stripped.startswith("|") or "------" in stripped:
+            continue
+        parts = [part.strip() for part in stripped.split("|")[1:-1]]
+        if len(parts) != expected_columns:
+            continue
+        rows.append(parts)
+    return rows
+
+
+def validate_evidence_telemetry(evidence_section: str) -> list[str]:
+    errors: list[str] = []
+    if "Evidence telemetry" not in evidence_section:
+        return errors
+
+    header = "| evidence_item | duration_ms | cost_usd | retry_count |"
+    if header not in evidence_section:
+        errors.append("evidence telemetry block must include the standard telemetry header")
+        return errors
+
+    main_items = {
+        strip_code(parts[0]) or ""
+        for parts in extract_pipe_table_rows(evidence_section, expected_columns=6)
+        if parts[0] != "evidence_item"
+    }
+    telemetry_rows = [
+        parts
+        for parts in extract_pipe_table_rows(evidence_section, expected_columns=4)
+        if parts[0] != "evidence_item"
+    ]
+    if not telemetry_rows:
+        errors.append("evidence telemetry block must include at least one telemetry row")
+        return errors
+
+    for item, duration_ms, cost_usd, retry_count in telemetry_rows:
+        telemetry_item = strip_code(item) or ""
+        if main_items and telemetry_item not in main_items:
+            errors.append(f"evidence telemetry item `{telemetry_item}` does not exist in the main evidence table")
+        duration_value = strip_code(duration_ms) or ""
+        if duration_value and not re.match(r"^\d+$", duration_value):
+            errors.append(f"evidence telemetry `duration_ms` must be an integer for `{telemetry_item}`")
+        cost_value = strip_code(cost_usd) or ""
+        if cost_value and not re.match(r"^\d+(\.\d+)?$", cost_value):
+            errors.append(f"evidence telemetry `cost_usd` must be numeric for `{telemetry_item}`")
+        retry_value = strip_code(retry_count) or ""
+        if retry_value and not re.match(r"^\d+$", retry_value):
+            errors.append(f"evidence telemetry `retry_count` must be an integer for `{telemetry_item}`")
+
+    return errors
+
+
 def discover_files(globs: list[str]) -> list[Path]:
     files: list[Path] = []
     for pattern in globs:
@@ -256,6 +310,7 @@ def validate_handoff(path: Path) -> list[str]:
     evidence = find_section(text, "Evidence expectation")
     if "| evidence_item | executed_by | executed_at | result | artifact_paths | review_status |" not in evidence:
         errors.append("missing structured evidence table")
+    errors.extend(validate_evidence_telemetry(evidence))
 
     approval = find_section(text, "Approval")
     if "approval_owner" not in approval:

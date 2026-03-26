@@ -65,6 +65,13 @@
 | `lint` | | | pass / fail | | pending / reviewed |
 | `build` | | | pass / fail | | pending / reviewed |
 
+**Evidence telemetry**：（可选，补充 cost / latency / retry）
+
+| evidence_item | duration_ms | cost_usd | retry_count |
+|---------------|-------------|----------|-------------|
+| `lint` | | | |
+| `build` | | | |
+
 **附加说明**：
 
 - （例如）`npm run build` 输出节选
