@@ -32,6 +32,7 @@ ADS 把这些问题收敛为一套简单但可执行的资产：
 - 一个面向存量项目的 ADS 自动接入器：`scripts/ads_adopt.py`，支持分析、自动写入、导出 markdown/json 接入报告
 - 一套接入与一致性检查能力：[`scripts/ads_doctor.py`](scripts/ads_doctor.py)、[`scripts/validate_ads.py`](scripts/validate_ads.py)
 - 一套让跨会话续做更稳定的辅助脚本：`ads_resume`、`ads_handoff_draft`、`ads_evidence_capture`
+- 一套正式的 blocked / needs-context 升级流程：`ads_escalation_draft` + `.ai/escalations/`
 - 一套可移植的 skill 体系：task decomposition、handoff writing、blocked triage、spec sync、integration review、innovation capture
 - 一套面向多客户端的接入思路：Claude Code / Codex CLI / Cursor / OpenCode
 
@@ -76,6 +77,7 @@ agent-dev-spec/
 - [`docs/00-overview.md`](docs/00-overview.md)
 - [`docs/01-principles.md`](docs/01-principles.md)
 - [`docs/04-handoff-and-tasks.md`](docs/04-handoff-and-tasks.md)
+- [`docs/08-harness-landscape-and-recovery.md`](docs/08-harness-landscape-and-recovery.md)
 - [`docs/guides/adoption-playbook.md`](docs/guides/adoption-playbook.md)
 - [`docs/guides/client-adapters/README.md`](docs/guides/client-adapters/README.md)
 - [`examples/README.md`](examples/README.md)
@@ -85,10 +87,11 @@ agent-dev-spec/
 当前 ADS 已完成并稳定提供：
 
 - 协议层：task / handoff / request / qa / memory / spec / toolset 校验
-- 自动化层：doctor、resume、handoff draft、evidence capture、tool sync、MCP server
+- 自动化层：doctor、resume、handoff draft、escalation draft、evidence capture、tool sync、MCP server
 - Skill 层：task-decomposer、handoff-writer、blocked-triager、spec-syncer、integration-reviewer、innovation-capture
 - 适配层：Claude Code、Codex CLI、Cursor、OpenCode
 - 示例层：端到端案例、上下文包、知识包、共享改动、QA 结论
+- 研究层：外部 harness landscape 研究与 roadmap 回写
 
 ## 从这里开始
 

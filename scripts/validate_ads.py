@@ -12,6 +12,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 TASK_GLOBS = [".ai/tasks/**/*.md", "examples/case-task-*.md"]
 HANDOFF_GLOBS = [".ai/handoffs/**/*.md", "examples/case-handoff-*.md"]
+ESCALATION_GLOBS = [".ai/escalations/**/*.md"]
 MEMORY_GLOBS = [".ai/memory/**/*.md", "examples/case-memory-*.md"]
 REQUEST_GLOBS = [".ai/requests/**/*.md", "examples/case-shared-change-request*.md"]
 QA_GLOBS = [".ai/qa/**/*.md", "examples/case-qa-*.md"]
@@ -20,6 +21,9 @@ CHANGE_GLOBS = [".ai/changes/**/proposal.md", "examples/case-change-proposal/pro
 SPEC_DELTA_GLOBS = [".ai/changes/**/spec-delta.md"]
 TOOLSET_PATHS = [REPO_ROOT / "tools" / "toolset.json", REPO_ROOT / "tools" / "toolset.json.example"]
 VALID_HANDOFF_STATUSES = {"DONE", "DONE_WITH_CONCERNS", "NEEDS_CONTEXT", "BLOCKED", "pending_resume"}
+VALID_ESCALATION_TYPES = {"needs_human_decision", "needs_context", "cross_repo", "security", "runtime_failure"}
+VALID_ESCALATION_STATUSES = {"pending", "resolved", "cancelled"}
+VALID_ESCALATION_URGENCIES = {"low", "medium", "high"}
 VALID_SPEC_UPDATE_STATUSES = {"not_started", "in_progress", "updated", "not_applicable"}
 VALID_COORDINATION_MODELS = {"direct", "orchestrated", "peer-parallel"}
 VALID_AUTONOMY_LEVELS = {"supervised", "semi-autonomous", "autonomous"}
@@ -94,6 +98,8 @@ def detect_kind(path: Path) -> str | None:
         return "task"
     if text.startswith("# ADS Handoff"):
         return "handoff"
+    if text.startswith("# ADS Escalation"):
+        return "escalation"
     if text.startswith("# Memory Object"):
         return "memory"
     if text.startswith("# Shared Change Request"):
@@ -325,6 +331,63 @@ def validate_memory(path: Path) -> list[str]:
 
     if not find_section(text, "Summary"):
         errors.append("missing summary section")
+
+    return errors
+
+
+def validate_escalation(path: Path) -> list[str]:
+    text = read_text(path)
+    errors: list[str] = []
+
+    for field in [
+        "escalation_id",
+        "task_id",
+        "source_handoff",
+        "escalation_type",
+        "requested_by",
+        "decision_owner",
+        "urgency",
+        "status",
+        "trace_id",
+        "updated_at",
+    ]:
+        if not extract_table_value(text, field):
+            errors.append(f"missing metadata field `{field}`")
+
+    updated_at = extract_table_value(text, "updated_at")
+    if updated_at and "ISO8601" not in updated_at and not is_iso8601ish(strip_code(updated_at) or ""):
+        errors.append("`updated_at` is not ISO8601-like")
+
+    escalation_type = strip_code(extract_table_value(text, "escalation_type"))
+    if escalation_type and escalation_type not in VALID_ESCALATION_TYPES:
+        errors.append(
+            f"`escalation_type` must be one of {sorted(VALID_ESCALATION_TYPES)}, got '{escalation_type}'"
+        )
+
+    status = strip_code(extract_table_value(text, "status"))
+    if status and status not in VALID_ESCALATION_STATUSES:
+        errors.append(
+            f"`status` must be one of {sorted(VALID_ESCALATION_STATUSES)}, got '{status}'"
+        )
+
+    urgency = strip_code(extract_table_value(text, "urgency"))
+    if urgency and urgency not in VALID_ESCALATION_URGENCIES:
+        errors.append(
+            f"`urgency` must be one of {sorted(VALID_ESCALATION_URGENCIES)}, got '{urgency}'"
+        )
+
+    source_handoff = strip_code(extract_table_value(text, "source_handoff") or "")
+    if source_handoff and not (REPO_ROOT / source_handoff).exists():
+        errors.append(f"referenced source_handoff does not exist: {source_handoff}")
+
+    for title in ["Current Block", "Decision Request", "Impact", "Evidence & Context", "Resolution"]:
+        if not find_section(text, title):
+            errors.append(f"missing `{title}` section")
+
+    if not extract_bullets(find_section(text, "Decision Request")):
+        errors.append("decision request section should contain bullet items")
+    if not extract_bullets(find_section(text, "Impact")):
+        errors.append("impact section should contain bullet items")
 
     return errors
 
@@ -658,14 +721,28 @@ def validate_toolset(path: Path) -> list[str]:
         if not isinstance(tool, dict):
             errors.append(f"tool #{index} must be an object")
             continue
-        for field in ("tool_id", "owner", "risk_level", "version", "manifest"):
+        for field in ("tool_id", "owner", "risk_level", "version", "source"):
             if not tool.get(field):
                 errors.append(f"tool #{index} missing `{field}`")
-        manifest = tool.get("manifest")
-        if manifest:
-            manifest_path = (REPO_ROOT / manifest).resolve()
-            if not manifest_path.exists():
-                errors.append(f"tool #{index} manifest does not exist: {manifest}")
+        source = str(tool.get("source", "")).strip()
+        if source == "skill":
+            manifest = tool.get("manifest")
+            if not manifest:
+                errors.append(f"tool #{index} missing `manifest`")
+            else:
+                manifest_path = (REPO_ROOT / manifest).resolve()
+                if not manifest_path.exists():
+                    errors.append(f"tool #{index} manifest does not exist: {manifest}")
+        elif source == "script":
+            entrypoint = tool.get("entrypoint")
+            if not entrypoint:
+                errors.append(f"tool #{index} missing `entrypoint`")
+            else:
+                entrypoint_path = (REPO_ROOT / entrypoint).resolve()
+                if not entrypoint_path.exists():
+                    errors.append(f"tool #{index} entrypoint does not exist: {entrypoint}")
+        elif source:
+            errors.append(f"tool #{index} has unsupported `source`: {source}")
     return errors
 
 
@@ -685,6 +762,7 @@ def main() -> int:
     else:
         files.extend(discover_files(TASK_GLOBS))
         files.extend(discover_files(HANDOFF_GLOBS))
+        files.extend(discover_files(ESCALATION_GLOBS))
         files.extend(discover_files(MEMORY_GLOBS))
         files.extend(discover_files(REQUEST_GLOBS))
         files.extend(discover_files(QA_GLOBS))
@@ -718,6 +796,8 @@ def main() -> int:
             continue
         if kind == "handoff":
             errors = validate_handoff(path)
+        elif kind == "escalation":
+            errors = validate_escalation(path)
         elif kind == "task":
             errors = validate_task(path)
         elif kind == "memory":

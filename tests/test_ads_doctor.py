@@ -79,6 +79,97 @@ MINIMAL_TASK = """\
 """
 
 
+BLOCKED_HANDOFF = """\
+    # ADS Handoff — `TASK-20260323-001`
+
+    ## Metadata
+
+    | 字段 | 值 |
+    |------|-----|
+    | **From** | Backend @ Codex |
+    | **To** | Integration |
+    | **task_id** | TASK-20260323-001 |
+    | **Priority** | High |
+    | **Timestamp** | 2026-03-23T11:00:00Z |
+    | **trace_id** | TRACE-20260323-001 |
+    | **updated_at** | 2026-03-23T11:00:00Z |
+    | **stale_after** | `P2D` |
+    | **handoff_status** | `BLOCKED` |
+    | **blocked_reason** | `Need API decision` |
+    | **spec_update_status** | `in_progress` |
+
+    ## Context
+
+    **当前状态**：实现暂停，等待接口方案。
+
+    ## Deliverable request
+
+    **需要什么**：确认 API 设计。
+
+    ## Evidence expectation
+
+    **必须提供的证明**：npm run test
+
+    **已附证据**：
+
+    | evidence_item | executed_by | executed_at | result | artifact_paths | review_status |
+    |---------------|-------------|-------------|--------|----------------|---------------|
+    | `test` | Backend @ Codex | 2026-03-23T10:50:00Z | pass | `artifacts/test.txt` | pending |
+
+    ## Approval
+
+    **approval_owner**：HumanOwner
+    **approval_status**：`pending`
+
+    ## Handoff to next
+
+    **下一棒**：Integration
+    **建议下一动作**：升级并等待决策。
+"""
+
+
+ESCALATION = """\
+    # ADS Escalation — `TASK-20260323-001`
+
+    ## Metadata
+
+    | 字段 | 值 |
+    |------|-----|
+    | **escalation_id** | `ESC-20260323-001` |
+    | **task_id** | `TASK-20260323-001` |
+    | **source_handoff** | `.ai/handoffs/TASK-20260323-001.md` |
+    | **escalation_type** | `needs_human_decision` |
+    | **requested_by** | Backend @ Codex |
+    | **decision_owner** | HumanOwner |
+    | **urgency** | `high` |
+    | **status** | `pending` |
+    | **trace_id** | `TRACE-20260323-001` |
+    | **updated_at** | 2026-03-23T11:05:00Z |
+
+    ## Current Block
+
+    **当前阻塞**：Need API decision
+
+    ## Decision Request
+
+    - 需要 HumanOwner 决策 API 方案
+
+    ## Impact
+
+    - `TASK-20260323-001`
+    - `Integration`
+
+    ## Evidence & Context
+
+    - `.ai/tasks/active/task.md`
+    - `.ai/handoffs/TASK-20260323-001.md`
+
+    ## Resolution
+
+    （待填写）
+"""
+
+
 def write_file(base: Path, rel: str, content: str) -> Path:
     path = base / rel
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -112,6 +203,27 @@ class TestAdsDoctor:
         findings = ads_doctor.run_doctor(target_root)
 
         assert any(f.code == "missing_handoff" for f in findings)
+
+    def test_doctor_reports_missing_escalation_for_blocked_handoff(self, tmp_path):
+        target_root = tmp_path / "blocked-project"
+        ads_init.init_repo(target_root, source_root=REPO_ROOT)
+        write_file(target_root, ".ai/tasks/active/task.md", MINIMAL_TASK)
+        write_file(target_root, ".ai/handoffs/TASK-20260323-001.md", BLOCKED_HANDOFF)
+
+        findings = ads_doctor.run_doctor(target_root)
+
+        assert any(f.code == "missing_escalation" for f in findings)
+
+    def test_doctor_accepts_blocked_handoff_when_escalation_exists(self, tmp_path):
+        target_root = tmp_path / "escalated-project"
+        ads_init.init_repo(target_root, source_root=REPO_ROOT)
+        write_file(target_root, ".ai/tasks/active/task.md", MINIMAL_TASK)
+        write_file(target_root, ".ai/handoffs/TASK-20260323-001.md", BLOCKED_HANDOFF)
+        write_file(target_root, ".ai/escalations/TASK-20260323-001.md", ESCALATION)
+
+        findings = ads_doctor.run_doctor(target_root)
+
+        assert not any(f.code == "missing_escalation" for f in findings)
 
     def test_doctor_reports_toolset_drift(self, tmp_path):
         target_root = tmp_path / "tool-project"

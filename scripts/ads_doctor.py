@@ -34,6 +34,7 @@ class HandoffRecord:
     path: Path
     task_id: str
     updated_at: str
+    handoff_status: str
 
 
 def read_text(path: Path) -> str:
@@ -86,6 +87,7 @@ def parse_handoff(path: Path) -> HandoffRecord:
         path=path,
         task_id=strip_code(extract_table_value(text, "task_id")) or path.stem,
         updated_at=strip_code(extract_table_value(text, "updated_at")),
+        handoff_status=strip_code(extract_table_value(text, "handoff_status")) or "unknown",
     )
 
 
@@ -161,6 +163,16 @@ def check_task_handoff_alignment(repo_root: Path) -> list[Finding]:
                         f"handoff `{handoff.path.relative_to(repo_root)}` has invalid updated_at `{handoff.updated_at}`",
                     )
                 )
+            if handoff.handoff_status in {"BLOCKED", "NEEDS_CONTEXT"}:
+                escalation_path = repo_root / ".ai" / "escalations" / f"{task.task_id}.md"
+                if not escalation_path.exists():
+                    findings.append(
+                        Finding(
+                            "warn",
+                            "missing_escalation",
+                            f"handoff `{handoff.path.relative_to(repo_root)}` is `{handoff.handoff_status}` but has no matching `.ai/escalations/{task.task_id}.md`",
+                        )
+                    )
 
     for handoff in handoffs:
         if handoff.task_id not in task_ids:

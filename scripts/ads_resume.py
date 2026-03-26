@@ -89,6 +89,11 @@ def infer_handoff(task_id: str, repo_root: Path) -> Path | None:
     return candidate if candidate.exists() else None
 
 
+def infer_escalation(task_id: str, repo_root: Path) -> Path | None:
+    candidate = repo_root / ".ai" / "escalations" / f"{task_id}.md"
+    return candidate if candidate.exists() else None
+
+
 def load_identity(identity_path: Path | None) -> dict:
     if not identity_path or not identity_path.exists():
         return {}
@@ -126,6 +131,26 @@ def load_change_info(parent_change_id: str, repo_root: Path) -> dict[str, object
     }
 
 
+def load_escalation_info(task_id: str, repo_root: Path) -> dict[str, str] | None:
+    path = infer_escalation(task_id, repo_root)
+    if not path or not path.exists():
+        return None
+    text = read_text(path)
+    current_block = ""
+    for line in find_section(text, "Current Block").splitlines():
+        line = line.strip()
+        if line.startswith("**当前阻塞**"):
+            current_block = line.split("：", 1)[-1].strip()
+            break
+    return {
+        "path": str(path.relative_to(repo_root)),
+        "escalation_type": extract_table_value(text, "escalation_type") or "unknown",
+        "status": extract_table_value(text, "status") or "unknown",
+        "decision_owner": extract_table_value(text, "decision_owner") or "unknown",
+        "current_block": current_block or "unknown",
+    }
+
+
 def build_resume(task_path: Path, handoff_path: Path | None, identity_path: Path | None, project_name: str | None, repo_root: Path = REPO_ROOT) -> str:
     task_text = read_text(task_path)
     task_id = extract_table_value(task_text, "task_id") or task_path.stem
@@ -155,6 +180,7 @@ def build_resume(task_path: Path, handoff_path: Path | None, identity_path: Path
 
     mission, principles = load_constitution(repo_root)
     change_info = load_change_info(parent_change_id, repo_root) if parent_change_id else None
+    escalation_info = load_escalation_info(task_id, repo_root)
 
     if handoff_path is None:
         handoff_path = infer_handoff(task_id, repo_root)
@@ -253,6 +279,19 @@ def build_resume(task_path: Path, handoff_path: Path | None, identity_path: Path
     lines.append("")
     lines.append("## Memory Refs")
     lines.extend(f"- {item}" for item in (sorted(set(memory_refs)) or ["none"]))
+
+    if escalation_info:
+        lines.extend(
+            [
+                "",
+                "## Active Escalation",
+                f"- path: {escalation_info['path']}",
+                f"- escalation_type: {escalation_info['escalation_type']}",
+                f"- status: {escalation_info['status']}",
+                f"- decision_owner: {escalation_info['decision_owner']}",
+                f"- current_block: {escalation_info['current_block']}",
+            ]
+        )
 
     lines.append("")
     lines.append("## Resume Checklist")

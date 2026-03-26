@@ -225,6 +225,146 @@ class TestHandoffPhase1Fields:
         assert any("spec_update_status" in e for e in errors)
 
 
+class TestEscalationValidation:
+    VALID_ESCALATION = """\
+        # ADS Escalation — `TASK-001`
+
+        ## Metadata
+
+        | 字段 | 值 |
+        |------|-----|
+        | **escalation_id** | `ESC-20260326-001` |
+        | **task_id** | `TASK-001` |
+        | **source_handoff** | `.ai/handoffs/TASK-001.md` |
+        | **escalation_type** | `needs_human_decision` |
+        | **requested_by** | Backend @ Codex |
+        | **decision_owner** | TechLead |
+        | **urgency** | `high` |
+        | **status** | `pending` |
+        | **trace_id** | `TRACE-001` |
+        | **updated_at** | `2026-03-26T12:00:00Z` |
+
+        ## Current Block
+
+        **当前阻塞**：Need signing key strategy
+
+        ## Decision Request
+
+        - 明确签名 key 策略
+        - 回写 task / handoff / escalation
+
+        ## Impact
+
+        - `TASK-001`
+        - `Integration`
+
+        ## Evidence & Context
+
+        - `.ai/tasks/active/task.md`
+        - `.ai/handoffs/TASK-001.md`
+
+        ## Resolution
+
+        （待填写）
+    """
+
+    def test_valid_escalation_passes(self, tmp_ads_repo):
+        write_file(tmp_ads_repo, ".ai/handoffs/TASK-001.md", "# ADS Handoff — `TASK-001`\n")
+        path = write_file(tmp_ads_repo, ".ai/escalations/TASK-001.md", self.VALID_ESCALATION)
+        original = validate_ads.REPO_ROOT
+        validate_ads.REPO_ROOT = tmp_ads_repo
+        try:
+            errors = validate_ads.validate_escalation(path)
+        finally:
+            validate_ads.REPO_ROOT = original
+        assert errors == [], f"Unexpected errors: {errors}"
+
+    def test_invalid_escalation_type_returns_error(self, tmp_ads_repo):
+        write_file(tmp_ads_repo, ".ai/handoffs/TASK-001.md", "# ADS Handoff — `TASK-001`\n")
+        content = self.VALID_ESCALATION.replace(
+            "| **escalation_type** | `needs_human_decision` |",
+            "| **escalation_type** | `wrong_type` |",
+        )
+        path = write_file(tmp_ads_repo, ".ai/escalations/TASK-001.md", content)
+        original = validate_ads.REPO_ROOT
+        validate_ads.REPO_ROOT = tmp_ads_repo
+        try:
+            errors = validate_ads.validate_escalation(path)
+        finally:
+            validate_ads.REPO_ROOT = original
+        assert any("escalation_type" in e for e in errors)
+
+    def test_missing_source_handoff_returns_error(self, tmp_ads_repo):
+        path = write_file(tmp_ads_repo, ".ai/escalations/TASK-001.md", self.VALID_ESCALATION)
+        original = validate_ads.REPO_ROOT
+        validate_ads.REPO_ROOT = tmp_ads_repo
+        try:
+            errors = validate_ads.validate_escalation(path)
+        finally:
+            validate_ads.REPO_ROOT = original
+        assert any("source_handoff" in e for e in errors)
+
+
+class TestToolsetValidation:
+    def test_script_toolset_entry_without_manifest_passes(self, tmp_ads_repo):
+        path = write_file(
+            tmp_ads_repo,
+            "tools/toolset.json",
+            """\
+            {
+              "version": "1.0",
+              "registry": "project-local",
+              "tools": [
+                {
+                  "tool_id": "ads.resume",
+                  "owner": "platform",
+                  "risk_level": "low",
+                  "version": "1.0.0",
+                  "source": "script",
+                  "entrypoint": "scripts/ads_resume.py"
+                }
+              ]
+            }
+            """,
+        )
+        write_file(tmp_ads_repo, "scripts/ads_resume.py", "#!/usr/bin/env python3\n")
+        original = validate_ads.REPO_ROOT
+        validate_ads.REPO_ROOT = tmp_ads_repo
+        try:
+            errors = validate_ads.validate_toolset(path)
+        finally:
+            validate_ads.REPO_ROOT = original
+        assert errors == [], f"Unexpected errors: {errors}"
+
+    def test_script_toolset_entry_missing_entrypoint_returns_error(self, tmp_ads_repo):
+        path = write_file(
+            tmp_ads_repo,
+            "tools/toolset.json",
+            """\
+            {
+              "version": "1.0",
+              "registry": "project-local",
+              "tools": [
+                {
+                  "tool_id": "ads.resume",
+                  "owner": "platform",
+                  "risk_level": "low",
+                  "version": "1.0.0",
+                  "source": "script"
+                }
+              ]
+            }
+            """,
+        )
+        original = validate_ads.REPO_ROOT
+        validate_ads.REPO_ROOT = tmp_ads_repo
+        try:
+            errors = validate_ads.validate_toolset(path)
+        finally:
+            validate_ads.REPO_ROOT = original
+        assert any("entrypoint" in e for e in errors)
+
+
 class TestTaskPhase1Fields:
     """Tests for Phase 1 new task fields: coordination_model."""
 

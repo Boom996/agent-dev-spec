@@ -200,6 +200,48 @@ CHANGE_PROPOSAL = """\
 """
 
 
+ESCALATION = """\
+    # ADS Escalation — `TASK-20260323-010`
+
+    ## Metadata
+
+    | 字段 | 值 |
+    |------|-----|
+    | **escalation_id** | `ESC-20260323-001` |
+    | **task_id** | `TASK-20260323-010` |
+    | **source_handoff** | `.ai/handoffs/TASK-20260323-010.md` |
+    | **escalation_type** | `needs_human_decision` |
+    | **requested_by** | Backend @ Codex |
+    | **decision_owner** | TechLead |
+    | **urgency** | `high` |
+    | **status** | `pending` |
+    | **trace_id** | `TRACE-20260323-010` |
+    | **updated_at** | 2026-03-23T12:10:00Z |
+
+    ## Current Block
+
+    **当前阻塞**：Need prod signing key decision
+
+    ## Decision Request
+
+    - 由 TechLead 明确 key 策略
+
+    ## Impact
+
+    - `TASK-20260323-010`
+    - `Integration`
+
+    ## Evidence & Context
+
+    - `.ai/tasks/active/task.md`
+    - `.ai/handoffs/TASK-20260323-010.md`
+
+    ## Resolution
+
+    （待填写）
+"""
+
+
 def write_file(base: Path, rel: str, content: str) -> Path:
     path = base / rel
     path.parent.mkdir(parents=True, exist_ok=True)
@@ -211,6 +253,7 @@ class TestAdsResume:
     def test_build_resume_includes_constitution_change_and_handoff(self, tmp_path):
         task_path = write_file(tmp_path, ".ai/tasks/active/task.md", TASK_WITH_CHANGE)
         write_file(tmp_path, ".ai/handoffs/TASK-20260323-010.md", HANDOFF_BLOCKED)
+        write_file(tmp_path, ".ai/escalations/TASK-20260323-010.md", ESCALATION)
         write_file(tmp_path, ".agent/constitution.md", CONSTITUTION)
         write_file(tmp_path, ".ai/changes/change-20260323-001/proposal.md", CHANGE_PROPOSAL)
         write_file(tmp_path, ".ai/memory/auth-risk.md", "# Memory Object\n")
@@ -236,6 +279,10 @@ class TestAdsResume:
         assert "handoff_status: BLOCKED" in resume_text
         assert "blocked_reason: Need prod signing key decision" in resume_text
         assert "next_action: 先确认签名 key 决策，再继续实现。" in resume_text
+        assert "## Active Escalation" in resume_text
+        assert "path: .ai/escalations/TASK-20260323-010.md" in resume_text
+        assert "decision_owner: TechLead" in resume_text
+        assert "current_block: Need prod signing key decision" in resume_text
         assert "python3 -m pytest -q" in resume_text
 
     def test_build_resume_handles_missing_handoff(self, tmp_path):

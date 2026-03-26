@@ -32,6 +32,7 @@ COPY_MAP = {
     "scripts/ads_resume.py": "scripts/ads_resume.py",
     "scripts/ads_handoff_draft.py": "scripts/ads_handoff_draft.py",
     "scripts/ads_evidence_capture.py": "scripts/ads_evidence_capture.py",
+    "scripts/ads_escalation_draft.py": "scripts/ads_escalation_draft.py",
     "scripts/ads_mcp_server.py": "scripts/ads_mcp_server.py",
     "scripts/sync-tools.py": "scripts/sync-tools.py",
 }
@@ -46,17 +47,21 @@ DOC_FILES = [
     "05-multi-client-and-mesh.md",
     "06-evolution.md",
     "07-iteration-log.md",
+    "08-harness-landscape-and-recovery.md",
     "guides/adoption-playbook.md",
     "guides/client-adapters/README.md",
     "guides/client-adapters/claude-code.md",
     "guides/client-adapters/codex-cli.md",
     "guides/client-adapters/cursor.md",
     "guides/client-adapters/opencode.md",
+    "research/README.md",
+    "research/2026-03-agent-harness-landscape.md",
 ]
 
 GENERATED_DIRS = [
     ".ai/tasks",
     ".ai/handoffs",
+    ".ai/escalations",
     ".ai/requests",
     ".ai/qa",
     ".ai/memory",
@@ -151,6 +156,16 @@ def build_toolset() -> str:
                 "version": "1.0.0",
                 "source": "script",
                 "entrypoint": "scripts/ads_evidence_capture.py",
+            },
+            {
+                "tool_id": "ads.escalation_draft",
+                "title": "ADS Escalation Draft",
+                "description": "Generate a structured escalation draft when a blocked or context-missing handoff cannot be resolved by the next actor alone.",
+                "owner": "platform",
+                "risk_level": "medium",
+                "version": "1.0.0",
+                "source": "script",
+                "entrypoint": "scripts/ads_escalation_draft.py",
             },
             {
                 "tool_id": "ads.validate",

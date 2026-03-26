@@ -24,16 +24,20 @@ class TestAdsInit:
         assert (target_root / "README_AGENT.md").exists()
         assert (target_root / ".agent" / "constitution.md").exists()
         assert (target_root / ".agent" / "docs" / "00-overview.md").exists()
+        assert (target_root / ".agent" / "docs" / "08-harness-landscape-and-recovery.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "adoption-playbook.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "client-adapters" / "codex-cli.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "client-adapters" / "cursor.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "client-adapters" / "opencode.md").exists()
+        assert (target_root / ".agent" / "docs" / "research" / "README.md").exists()
         assert (target_root / ".ai" / "START_HERE.md").exists()
+        assert (target_root / ".ai" / "escalations").exists()
         assert (target_root / ".ai" / "innovations").exists()
         assert (target_root / ".github" / "workflows" / "ads-checks.yml.example").exists()
         assert (target_root / "tools" / "toolset.json").exists()
         assert (target_root / "tools" / "mcp" / "ads-server.json.example").exists()
         assert (target_root / "scripts" / "ads_doctor.py").exists()
+        assert (target_root / "scripts" / "ads_escalation_draft.py").exists()
         assert (target_root / "scripts" / "ads_mcp_server.py").exists()
         assert (target_root / "scripts" / "sync-tools.py").exists()
 
@@ -44,6 +48,7 @@ class TestAdsInit:
         toolset = json.loads((target_root / "tools" / "toolset.json").read_text(encoding="utf-8"))
         tool_ids = {tool["tool_id"] for tool in toolset["tools"]}
         assert "ads.doctor" in tool_ids
+        assert "ads.escalation_draft" in tool_ids
         assert "ads.sync_tools" in tool_ids
 
         readme_agent = (target_root / "README_AGENT.md").read_text(encoding="utf-8")
