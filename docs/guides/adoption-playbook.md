@@ -97,6 +97,7 @@ python3 scripts/ads_adopt.py /path/to/your-project \
 在宿主仓库运行：
 
 ```bash
+python3 scripts/ads_explain.py
 python3 scripts/ads_doctor.py
 python3 scripts/validate_ads.py
 ```
@@ -111,7 +112,13 @@ python3 scripts/ads_evidence_capture.py \
   --cost-usd 0.012500
 ```
 
-如果这两步都通过，说明 ADS 基本接入完成，可以开始把真实工作流迁移到这套协议上。
+其中：
+
+- `ads_explain.py` 用来确认“这个仓库为什么使用 ADS、先看什么、下一步做什么”
+- `ads_doctor.py` 用来确认结构是否齐全
+- `validate_ads.py` 用来确认协议文件是否合法
+
+如果这三步都通过，说明 ADS 基本接入完成，可以开始把真实工作流迁移到这套协议上。
 
 ## 推荐接入节奏
 

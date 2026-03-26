@@ -54,6 +54,16 @@
       "entrypoint": "scripts/ads_evidence_capture.py"
     },
     {
+      "tool_id": "ads.explain",
+      "title": "ADS Explain",
+      "description": "Generate a plain-language first-run brief so humans and agents can quickly understand the project mission, collaboration status, and next steps.",
+      "owner": "platform",
+      "risk_level": "low",
+      "version": "1.0.0",
+      "source": "script",
+      "entrypoint": "scripts/ads_explain.py"
+    },
+    {
       "tool_id": "ads.handoff_draft",
       "title": "ADS Handoff Draft",
       "description": "Generate a handoff draft from task metadata and the current git diff.",

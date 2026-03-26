@@ -57,6 +57,13 @@ def build_doctor_args(arguments: JSON, repo_root: Path) -> list[str]:
     return args
 
 
+def build_explain_args(arguments: JSON, repo_root: Path) -> list[str]:
+    args: list[str] = []
+    add_flag(args, "--repo-root", arguments.get("repo_root") or str(repo_root))
+    add_flag(args, "--output", arguments.get("output"))
+    return args
+
+
 def build_resume_args(arguments: JSON, repo_root: Path) -> list[str]:
     args = [str(arguments["task"])]
     add_flag(args, "--handoff", arguments.get("handoff"))
@@ -182,6 +189,18 @@ SCRIPT_TOOL_SPECS: dict[str, ToolSpec] = {
             "properties": {"repo_root": {"type": "string"}},
         },
         build_args=build_doctor_args,
+    ),
+    "ads.explain": ToolSpec(
+        tool_id="ads.explain",
+        rel_script="scripts/ads_explain.py",
+        input_schema={
+            "type": "object",
+            "properties": {
+                "repo_root": {"type": "string"},
+                "output": {"type": "string"},
+            },
+        },
+        build_args=build_explain_args,
     ),
     "ads.resume": ToolSpec(
         tool_id="ads.resume",

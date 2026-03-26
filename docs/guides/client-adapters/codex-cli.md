@@ -33,6 +33,12 @@ Codex CLI 在 ADS 体系里最适合承担三类动作：
 python3 scripts/ads_resume.py .ai/tasks/active/<task-id>.md
 ```
 
+如果你是第一次进入该仓库，先跑：
+
+```bash
+python3 scripts/ads_explain.py
+```
+
 ## 推荐命令工作流
 
 ### 1. 接入新仓库

@@ -12,6 +12,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 import ads_init
+import ads_explain
 import ads_mcp_server
 
 
@@ -110,7 +111,23 @@ class TestAdsMcpServer:
         tool_names = {tool["name"] for tool in tools}
         assert "ads.resume" in tool_names
         assert "ads.doctor" in tool_names
+        assert "ads.explain" in tool_names
         assert "ads.integration_reviewer" in tool_names
+
+    def test_tools_call_runs_ads_explain(self, tmp_path):
+        ads_init.init_repo(tmp_path, source_root=REPO_ROOT)
+        response = ads_mcp_server.handle_request(
+            {
+                "jsonrpc": "2.0",
+                "id": 11,
+                "method": "tools/call",
+                "params": {"name": "ads.explain", "arguments": {"repo_root": str(tmp_path)}},
+            },
+            repo_root=REPO_ROOT,
+        )
+        assert response is not None
+        assert response["result"]["isError"] is False
+        assert "# ADS Project Brief" in response["result"]["content"][0]["text"]
 
     def test_tools_call_runs_ads_doctor(self, tmp_path):
         ads_init.init_repo(tmp_path, source_root=REPO_ROOT)

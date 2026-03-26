@@ -32,6 +32,16 @@ CORE_SCRIPT_TOOLS = [
         "entrypoint": "scripts/ads_doctor.py",
     },
     {
+        "tool_id": "ads.explain",
+        "title": "ADS Explain",
+        "description": "Generate a plain-language first-run brief so humans and agents can quickly understand the project mission, collaboration status, and next steps.",
+        "owner": "platform",
+        "risk_level": "low",
+        "version": "1.0.0",
+        "source": "script",
+        "entrypoint": "scripts/ads_explain.py",
+    },
+    {
         "tool_id": "ads.resume",
         "title": "ADS Resume",
         "description": "Build a resume-oriented context summary from task, handoff, change, and constitution artifacts.",
