@@ -196,6 +196,23 @@ def build_guidance(
     }
 
 
+def build_homepage(project: JSON, metrics: JSON, focus: JSON) -> JSON:
+    pending_block = bool(focus.get("escalation"))
+    return {
+        "project_home_title": "项目首页",
+        "project_home_summary": "先理解项目使命与阶段，再进入具体代码与任务细节。",
+        "control_panel_title": "今日控制台",
+        "control_panel_summary": "这里汇总当前最重要任务、下一步动作、阻塞和审批状态。",
+        "ads_role": "ADS 是这个仓库的协作控制面：任务、交接、证据、审批和恢复都应落在仓库文件里，而不是只存在聊天记录中。",
+        "status_lines": [
+            f"总体状态：{project['overall_status']}",
+            f"待审批：{metrics['pending_approvals']}",
+            f"阻塞数：{metrics['active_escalations']}",
+            "当前存在人工决策阻塞，请优先处理。" if pending_block else "当前没有人工决策阻塞，可以继续推进。",
+        ],
+    }
+
+
 def build_snapshot(repo_root: Path = REPO_ROOT) -> JSON:
     docs_entry = ads_explain.load_docs_entry(repo_root)
     active_task_paths = sort_paths_by_updated(
@@ -281,6 +298,16 @@ def build_snapshot(repo_root: Path = REPO_ROOT) -> JSON:
             "docs_entry": docs_entry,
         },
         "metrics": metrics,
+        "homepage": build_homepage(
+            {
+                "name": ads_explain.load_project_name(repo_root),
+                "mission": ads_explain.load_mission(repo_root),
+                "current_stage": ads_explain.load_current_stage(repo_root),
+                "overall_status": overall_status,
+            },
+            metrics,
+            focus,
+        ),
         "focus": focus,
         "recent_progress": recent_progress,
         "guidance": build_guidance(repo_root, docs_entry, ads_explain.infer_workspace_status(repo_root), primary_task),
@@ -556,6 +583,7 @@ def render_layout(title: str, subtitle: str, body: str) -> str:
 def render_overview_page(snapshot: JSON) -> str:
     project = snapshot["project"]
     metrics = snapshot["metrics"]
+    homepage = snapshot["homepage"]
     focus = snapshot["focus"]
     recent = snapshot["recent_progress"]
     guidance = snapshot["guidance"]
@@ -565,6 +593,8 @@ def render_overview_page(snapshot: JSON) -> str:
     latest_telemetry = recent["latest_telemetry"]
     read_list = "".join(f"<span>{html.escape(item)}</span>" for item in guidance["read_this_first"])
     command_text = html.escape("\n".join(guidance["next_commands"]))
+    mission_text = project["mission"] if project["mission"] != "unknown" else "请先在 .agent/constitution.md 中补充项目使命。"
+    stage_text = project["current_stage"] if project["current_stage"] != "unknown" else "请在 .ai/START_HERE.md 中声明当前阶段。"
     empty_state = (
         f"<div class='attention'><strong>空状态提示：</strong>{html.escape(guidance['empty_state'])}<br><span>建议先查看 {html.escape(guidance['backlog_hint'])}</span></div>"
         if guidance["empty_state"]
@@ -574,20 +604,36 @@ def render_overview_page(snapshot: JSON) -> str:
     <section class="hero">
       <div class="panel">
         <div class="eyebrow">ADS Local Dashboard</div>
-        <h1>项目全局概览</h1>
-        <p class="subtitle">{html.escape(project['name'])} · {html.escape(project['mission'])}</p>
+        <h1>{html.escape(homepage['project_home_title'])}</h1>
+        <p class="subtitle">{html.escape(project['name'])} · {html.escape(mission_text)}</p>
         <div class="meta-list">
-          <span>当前阶段：{html.escape(project['current_stage'])}</span>
-          <span>工作区状态：{html.escape(project['workspace_status'])}</span>
+          <span>当前阶段：{html.escape(stage_text)}</span>
+          <span>工作区状态：{html.escape(guidance['workspace_label'])}</span>
+          <span>{html.escape(homepage['project_home_summary'])}</span>
+          <span>{html.escape(homepage['ads_role'])}</span>
         </div>
       </div>
       <div class="panel">
+        <div class="eyebrow">Today Control</div>
+        <h2 class="section-title" style="margin-bottom:10px;">{html.escape(homepage['control_panel_title'])}</h2>
         <div class="status-badge {status_class}">{html.escape(project['overall_status'])}</div>
         <div class="stack-list">
+          <span>{html.escape(homepage['control_panel_summary'])}</span>
+          <span>当前重点：{html.escape(focus['title'])}</span>
+          <span>下一步动作：{html.escape(focus['next_action'])}</span>
           <span>最近更新时间：{html.escape(str(metrics['last_updated']))}</span>
           <span>项目简报：{html.escape(project['docs_entry'].get('project_brief', '未声明'))}</span>
           <span>主上下文：{html.escape(project['docs_entry'].get('ai_context', '未声明'))}</span>
+          {"".join(f"<span>{html.escape(line)}</span>" for line in homepage['status_lines'])}
         </div>
+      </div>
+    </section>
+
+    <section class="panel" style="margin-top:18px;">
+      <h2 class="section-title">项目全局概览</h2>
+      <div class="list">
+        <span>这是一个以仓库为中心的人机协作控制面首页，而不是传统 admin dashboard。</span>
+        <span>目标是让新成员先理解项目，再让续做成员直接进入任务推进。</span>
       </div>
     </section>
 
@@ -605,7 +651,7 @@ def render_overview_page(snapshot: JSON) -> str:
             <strong>2. 当前 ADS 状态</strong>
             <div class="list" style="margin-top:10px;">
               <span>{html.escape(guidance['workspace_label'])}</span>
-              <span>项目当前阶段：{html.escape(project['current_stage'])}</span>
+              <span>项目当前阶段：{html.escape(stage_text)}</span>
               <span>项目总状态：{html.escape(project['overall_status'])}</span>
             </div>
           </div>
@@ -619,14 +665,14 @@ def render_overview_page(snapshot: JSON) -> str:
         <h2 class="section-title">使用建议</h2>
         <div class="progress-card">
           <div class="progress-item">
-            <strong>新成员</strong>
+            <strong>新成员入口</strong>
             <div class="list" style="margin-top:10px;">
               <span>先理解项目使命、当前阶段、主上下文，再进入代码。</span>
               <span>优先使用结构化 task / handoff，不要从聊天记录倒推状态。</span>
             </div>
           </div>
           <div class="progress-item">
-            <strong>续做成员</strong>
+            <strong>续做成员入口</strong>
             <div class="list" style="margin-top:10px;">
               <span>从 active task 和最近 handoff 恢复上下文。</span>
               <span>如果卡住，先看 `.ai/escalations/`，不要自行猜测决策。</span>

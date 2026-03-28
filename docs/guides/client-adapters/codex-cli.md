@@ -39,13 +39,13 @@ python3 scripts/ads_resume.py .ai/tasks/active/<task-id>.md
 python3 scripts/ads_explain.py
 ```
 
-如果你想直接在本地网页里查看项目概览，再跑：
+如果你想直接在本地网页里查看项目首页和控制台，再跑：
 
 ```bash
 python3 scripts/ads_dashboard.py
 ```
 
-这个页面现在除了概览，还会给出首读文档、推荐命令，以及没有 active task 时的下一步提示。
+这个页面现在除了项目首页与概览，还会给出今日控制台、首读文档、推荐命令，以及没有 active task 时的下一步提示。
 
 ## 推荐命令工作流
 

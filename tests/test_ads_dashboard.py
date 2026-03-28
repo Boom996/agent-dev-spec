@@ -235,6 +235,8 @@ class TestAdsDashboard:
         assert snapshot["guidance"]["workspace_label"] == "ADS 已接入"
         assert "README_AGENT.md" in snapshot["guidance"]["read_this_first"]
         assert "python3 scripts/ads_dashboard.py" in snapshot["guidance"]["next_commands"]
+        assert snapshot["homepage"]["project_home_title"] == "项目首页"
+        assert snapshot["homepage"]["control_panel_title"] == "今日控制台"
 
     def test_render_overview_page_contains_dashboard_sections(self, tmp_path):
         ads_init.init_repo(tmp_path, source_root=REPO_ROOT, project_name="AgentGames")
@@ -248,6 +250,10 @@ class TestAdsDashboard:
         assert "当前重点" in html
         assert "最近进展" in html
         assert "快速上手" in html
+        assert "项目首页" in html
+        assert "今日控制台" in html
+        assert "新成员入口" in html
+        assert "续做成员入口" in html
         assert "README_AGENT.md" in html
         assert "python3 scripts/ads_doctor.py" in html
         assert "行动入口" in html
