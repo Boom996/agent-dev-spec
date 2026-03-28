@@ -232,6 +232,9 @@ class TestAdsDashboard:
         assert snapshot["metrics"]["telemetry_coverage"] == 100
         assert snapshot["focus"]["task_id"] == "TASK-20260326-401"
         assert snapshot["focus"]["next_action"] == "执行集成验证"
+        assert snapshot["guidance"]["workspace_label"] == "ADS 已接入"
+        assert "README_AGENT.md" in snapshot["guidance"]["read_this_first"]
+        assert "python3 scripts/ads_dashboard.py" in snapshot["guidance"]["next_commands"]
 
     def test_render_overview_page_contains_dashboard_sections(self, tmp_path):
         ads_init.init_repo(tmp_path, source_root=REPO_ROOT, project_name="AgentGames")
@@ -244,6 +247,9 @@ class TestAdsDashboard:
         assert "关键指标" in html
         assert "当前重点" in html
         assert "最近进展" in html
+        assert "快速上手" in html
+        assert "README_AGENT.md" in html
+        assert "python3 scripts/ads_doctor.py" in html
         assert "行动入口" in html
         assert "AgentGames" in html
 
@@ -277,3 +283,21 @@ class TestAdsDashboard:
         assert "项目全局概览" in overview["body"]
         assert detail["status"] == 200
         assert "当前任务详情" in detail["body"]
+
+    def test_build_snapshot_without_active_task_returns_empty_state_guidance(self, tmp_path):
+        ads_init.init_repo(tmp_path, source_root=REPO_ROOT, project_name="AgentGames")
+
+        snapshot = ads_dashboard.build_snapshot(tmp_path)
+
+        assert snapshot["focus"]["title"] == "当前没有进行中任务"
+        assert snapshot["focus"]["next_action"] == "先从 backlog 选择一个任务，再补当前 handoff。"
+        assert snapshot["guidance"]["empty_state"] == "当前仓库还没有 active task，建议先从 backlog 激活一个真实任务。"
+
+    def test_render_overview_page_shows_empty_state_actions_when_no_active_task(self, tmp_path):
+        ads_init.init_repo(tmp_path, source_root=REPO_ROOT, project_name="AgentGames")
+
+        html = ads_dashboard.render_overview_page(ads_dashboard.build_snapshot(tmp_path))
+
+        assert "当前没有进行中任务" in html
+        assert "先从 backlog 选择一个任务" in html
+        assert ".ai/tasks/backlog/" in html

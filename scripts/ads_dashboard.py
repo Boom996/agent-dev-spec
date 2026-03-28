@@ -135,12 +135,74 @@ def latest(items: list[JSON], key: str) -> JSON | None:
     return sorted(items, key=lambda item: parse_iso8601(str(item.get(key, ""))) or datetime.min.replace(tzinfo=timezone.utc), reverse=True)[0]
 
 
+def workspace_label(status: str) -> str:
+    return {
+        "ads_ready": "ADS 已接入",
+        "partial_ads": "ADS 部分接入",
+        "needs_bootstrap": "尚未接入 ADS",
+    }.get(status, status)
+
+
+def unique_strings(values: list[str]) -> list[str]:
+    seen: set[str] = set()
+    items: list[str] = []
+    for value in values:
+        cleaned = value.strip()
+        if cleaned and cleaned not in seen:
+            seen.add(cleaned)
+            items.append(cleaned)
+    return items
+
+
+def build_guidance(
+    repo_root: Path,
+    docs_entry: JSON,
+    workspace_status: str,
+    primary_task: JSON | None,
+) -> JSON:
+    read_this_first = unique_strings(
+        [
+            "README_AGENT.md",
+            ".ai/START_HERE.md" if (repo_root / ".ai" / "START_HERE.md").exists() else "",
+            ".agent/constitution.md" if (repo_root / ".agent" / "constitution.md").exists() else "",
+            str(docs_entry.get("project_brief", "")),
+            str(docs_entry.get("ai_context", "")),
+        ]
+    )
+
+    if workspace_status == "needs_bootstrap":
+        next_commands = [
+            "python3 scripts/ads_init.py /path/to/your-project",
+            "python3 scripts/ads_adopt.py /path/to/your-project --apply",
+        ]
+    else:
+        next_commands = [
+            "python3 scripts/ads_explain.py",
+            "python3 scripts/ads_dashboard.py",
+            "python3 scripts/ads_doctor.py",
+            "python3 scripts/validate_ads.py",
+        ]
+        if primary_task:
+            next_commands.append(f"python3 scripts/ads_resume.py {primary_task['path']}")
+
+    return {
+        "workspace_label": workspace_label(workspace_status),
+        "read_this_first": read_this_first,
+        "next_commands": next_commands,
+        "empty_state": "当前仓库还没有 active task，建议先从 backlog 激活一个真实任务。"
+        if not primary_task
+        else "",
+        "backlog_hint": ".ai/tasks/backlog/",
+    }
+
+
 def build_snapshot(repo_root: Path = REPO_ROOT) -> JSON:
     docs_entry = ads_explain.load_docs_entry(repo_root)
     active_task_paths = sort_paths_by_updated(
         discover(repo_root, ".ai/tasks/active/*.md"),
         lambda path: parse_iso8601(ads_resume.extract_table_value(read_text(path), "updated_at") or ""),
     )
+    backlog_task_paths = discover(repo_root, ".ai/tasks/backlog/*.md")
     handoff_paths = sort_paths_by_updated(
         discover(repo_root, ".ai/handoffs/*.md"),
         lambda path: parse_iso8601(ads_resume.extract_table_value(read_text(path), "updated_at") or ""),
@@ -189,7 +251,7 @@ def build_snapshot(repo_root: Path = REPO_ROOT) -> JSON:
         "next_action": (
             primary_handoff["next_action"]
             if primary_handoff
-            else ("先生成或更新当前 task 的 handoff。" if primary_task else "先创建一个真实 task。")
+            else ("先生成或更新当前 task 的 handoff。" if primary_task else "先从 backlog 选择一个任务，再补当前 handoff。")
         ),
         "path": primary_task["path"] if primary_task else "",
         "escalation": primary_escalation,
@@ -221,9 +283,11 @@ def build_snapshot(repo_root: Path = REPO_ROOT) -> JSON:
         "metrics": metrics,
         "focus": focus,
         "recent_progress": recent_progress,
+        "guidance": build_guidance(repo_root, docs_entry, ads_explain.infer_workspace_status(repo_root), primary_task),
         "actions": actions,
         "collections": {
             "tasks": tasks,
+            "backlog_tasks": [path.relative_to(repo_root).as_posix() for path in backlog_task_paths],
             "handoffs": handoffs,
             "escalations": escalations,
             "qas": qas,
@@ -494,10 +558,18 @@ def render_overview_page(snapshot: JSON) -> str:
     metrics = snapshot["metrics"]
     focus = snapshot["focus"]
     recent = snapshot["recent_progress"]
+    guidance = snapshot["guidance"]
     status_class = "warn" if project["overall_status"] != "正常推进" else ""
     latest_handoff = recent["latest_handoff"]
     latest_qa = recent["latest_qa"]
     latest_telemetry = recent["latest_telemetry"]
+    read_list = "".join(f"<span>{html.escape(item)}</span>" for item in guidance["read_this_first"])
+    command_text = html.escape("\n".join(guidance["next_commands"]))
+    empty_state = (
+        f"<div class='attention'><strong>空状态提示：</strong>{html.escape(guidance['empty_state'])}<br><span>建议先查看 {html.escape(guidance['backlog_hint'])}</span></div>"
+        if guidance["empty_state"]
+        else ""
+    )
     body = f"""
     <section class="hero">
       <div class="panel">
@@ -515,6 +587,52 @@ def render_overview_page(snapshot: JSON) -> str:
           <span>最近更新时间：{html.escape(str(metrics['last_updated']))}</span>
           <span>项目简报：{html.escape(project['docs_entry'].get('project_brief', '未声明'))}</span>
           <span>主上下文：{html.escape(project['docs_entry'].get('ai_context', '未声明'))}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid" style="margin-top:18px;">
+      <div class="panel span-7">
+        <h2 class="section-title">快速上手</h2>
+        <div class="progress-card">
+          <div class="progress-item">
+            <strong>1. 先读这些文档</strong>
+            <div class="list" style="margin-top:10px;">
+              {read_list}
+            </div>
+          </div>
+          <div class="progress-item">
+            <strong>2. 当前 ADS 状态</strong>
+            <div class="list" style="margin-top:10px;">
+              <span>{html.escape(guidance['workspace_label'])}</span>
+              <span>项目当前阶段：{html.escape(project['current_stage'])}</span>
+              <span>项目总状态：{html.escape(project['overall_status'])}</span>
+            </div>
+          </div>
+          <div class="progress-item">
+            <strong>3. 建议命令</strong>
+            <pre>{command_text}</pre>
+          </div>
+        </div>
+      </div>
+      <div class="panel span-5">
+        <h2 class="section-title">使用建议</h2>
+        <div class="progress-card">
+          <div class="progress-item">
+            <strong>新成员</strong>
+            <div class="list" style="margin-top:10px;">
+              <span>先理解项目使命、当前阶段、主上下文，再进入代码。</span>
+              <span>优先使用结构化 task / handoff，不要从聊天记录倒推状态。</span>
+            </div>
+          </div>
+          <div class="progress-item">
+            <strong>续做成员</strong>
+            <div class="list" style="margin-top:10px;">
+              <span>从 active task 和最近 handoff 恢复上下文。</span>
+              <span>如果卡住，先看 `.ai/escalations/`，不要自行猜测决策。</span>
+            </div>
+          </div>
+          {empty_state}
         </div>
       </div>
     </section>

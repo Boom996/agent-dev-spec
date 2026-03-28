@@ -45,6 +45,8 @@ python3 scripts/ads_explain.py
 python3 scripts/ads_dashboard.py
 ```
 
+这个页面现在除了概览，还会给出首读文档、推荐命令，以及没有 active task 时的下一步提示。
+
 ## 推荐命令工作流
 
 ### 1. 接入新仓库
