@@ -47,6 +47,19 @@ python3 scripts/ads_dashboard.py
 
 这个页面现在除了项目首页与概览，还会给出今日控制台、首读文档、推荐命令，以及没有 active task 时的下一步提示。
 
+如果你当前已经在目标项目仓库中，而只是拿到了 ADS 仓库链接，推荐优先运行：
+
+```bash
+python3 /path/to/agent-dev-spec/scripts/ads_self_install.py
+```
+
+它会默认：
+
+- 把当前 git 仓库当成接入目标
+- dirty worktree 时先停下
+- 自动创建新的 ADS 接入分支
+- 接入成功后打开 ADS dashboard
+
 ## 推荐命令工作流
 
 ### 1. 接入新仓库

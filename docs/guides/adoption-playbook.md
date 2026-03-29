@@ -17,6 +17,25 @@
 
 ## 10 分钟落地路径
 
+### 0. 如果你是当前项目里的 Agent，优先走自接入入口
+
+如果你已经在目标项目仓库里工作，并且只是拿到了 ADS 仓库链接，推荐直接运行：
+
+```bash
+python3 /path/to/agent-dev-spec/scripts/ads_self_install.py
+```
+
+这个命令默认会：
+
+- 把当前 git 仓库识别为接入目标
+- 检查是否存在未提交修改
+- 提醒作者优先提交/上传当前工作
+- 自动创建新的 ADS 接入分支
+- 完成 apply、doctor、validate
+- 成功后启动并打开 ADS dashboard
+
+这条路径比手动拼 `ads_adopt.py --apply` 更适合 Agent 自主执行。
+
 ### 1. 植入 ADS 骨架
 
 在 ADS 仓库执行：
@@ -56,6 +75,8 @@ python3 scripts/ads_adopt.py /path/to/your-project \
 - 推荐采用什么接入方式
 - 最小试用路径是什么
 - apply 完成后先跑哪几个命令
+
+如果你已经明确要在**当前仓库**里执行安全试接入，则优先改用 `ads_self_install.py`，因为它会默认处理分支与 dirty worktree 安全边界。
 
 ### 2. 补齐宿主项目信息
 

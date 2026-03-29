@@ -31,6 +31,7 @@ ADS 把这些问题收敛为一套简单但可执行的资产：
 
 - 一个可以植入任何项目的 ADS 骨架初始化器：[`scripts/ads_init.py`](scripts/ads_init.py)
 - 一个面向存量项目的 ADS 自动接入器：`scripts/ads_adopt.py`，支持先生成试用判断报告，再自动写入并输出 apply 后下一步
+- 一个面向“当前仓库自接入”的安全高层入口：`scripts/ads_self_install.py`，默认先检查本地修改、自动拉新分支，再完成 apply 和 dashboard 打开
 - 一套接入与一致性检查能力：[`scripts/ads_doctor.py`](scripts/ads_doctor.py)、[`scripts/validate_ads.py`](scripts/validate_ads.py)
 - 一个面向人和 Agent 的首读摘要器：`scripts/ads_explain.py`
 - 一个本地网页状态面板：`scripts/ads_dashboard.py`，同时提供项目首页、今日控制台、上手引导与任务/风险/健康详情
@@ -41,6 +42,20 @@ ADS 把这些问题收敛为一套简单但可执行的资产：
 - 一套面向多客户端的接入思路：Claude Code / Codex CLI / Cursor / OpenCode
 
 ## 10 分钟接入路径
+
+如果你是“在另一个项目里工作的 Agent”，拿到了 ADS 的 git 链接，推荐先 clone ADS 仓库，然后在**目标项目根目录**执行：
+
+```bash
+python3 /path/to/agent-dev-spec/scripts/ads_self_install.py
+```
+
+这个入口会默认：
+
+- 检查当前项目 git 工作区
+- 发现未提交修改时先停下并提醒作者优先提交/上传
+- 自动创建新的 ADS 接入分支
+- 完成 adopt -> apply -> doctor -> validate
+- 接入成功后启动并打开 ADS dashboard
 
 1. 如果是新项目或干净仓库，执行 `python3 scripts/ads_init.py /path/to/your-project`。
 2. 如果是已有协作资产的存量项目，先执行 `python3 scripts/ads_adopt.py /path/to/your-project` 获取试用判断报告；如需保留接入报告，可追加 `--report-file` / `--json-file`；确认后再用 `--apply` 自动写入 ADS 骨架。

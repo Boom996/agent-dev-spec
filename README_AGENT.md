@@ -2,6 +2,29 @@
 
 > **Agent Development Specification（ADS）** — 多 Agent 协作时请先读本文件，再读宿主项目的 `docs/03-development/ai-context.md` 或等价上下文（若存在）。
 
+## 如果你是另一个项目里的 Agent，并且拿到了这个 ADS 仓库
+
+你的默认目标应当是：
+
+- 把 **当前所在 git 仓库** 视为接入目标
+- 不直接在主分支 apply ADS
+- 先检查是否存在未提交修改
+- 优先提醒作者先提交并上传当前工作
+- 再自动创建新的 ADS 接入分支
+
+推荐唯一入口命令：
+
+```bash
+python3 /path/to/agent-dev-spec/scripts/ads_self_install.py
+```
+
+要求：
+
+1. 在目标项目仓库内执行
+2. 如果工作区 dirty，先停止，不要直接接入
+3. 只有在新分支内才进行 apply
+4. 接入成功后直接查看 ADS dashboard
+
 ## 本工程遵循的规范
 
 - **规范名**：Agent 开发规范 / **Agent Development Specification（ADS）**
