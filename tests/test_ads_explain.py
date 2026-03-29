@@ -143,7 +143,7 @@ class TestAdsExplain:
         assert "MVP Week 3 — Save System" in text
         assert "- active_tasks: 1" in text
         assert "- active_escalations: 1" in text
-        assert "README_AGENT.md" in text
+        assert "README.md" in text
         assert "python3 scripts/ads_doctor.py" in text
         assert "python3 scripts/ads_resume.py .ai/tasks/active/task.md" in text
 

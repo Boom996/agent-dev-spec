@@ -21,7 +21,7 @@ class TestAdsInit:
         result = ads_init.init_repo(target_root, source_root=REPO_ROOT)
 
         assert result.created
-        assert (target_root / "README_AGENT.md").exists()
+        assert (target_root / "README.md").exists()
         assert (target_root / ".agent" / "constitution.md").exists()
         assert (target_root / ".agent" / "docs" / "00-overview.md").exists()
         assert (target_root / ".agent" / "docs" / "08-harness-landscape-and-recovery.md").exists()
@@ -55,9 +55,21 @@ class TestAdsInit:
         assert "ads.escalation_draft" in tool_ids
         assert "ads.sync_tools" in tool_ids
 
-        readme_agent = (target_root / "README_AGENT.md").read_text(encoding="utf-8")
-        assert ".agent/docs/00-overview.md" in readme_agent
-        assert ".agent/docs/guides/adoption-playbook.md" in readme_agent
+        readme = (target_root / "README.md").read_text(encoding="utf-8")
+        assert "ADS Agent Quick Start" in readme
+        assert ".ai/START_HERE.md" in readme
+        assert ".agent/docs/guides/adoption-playbook.md" in readme
+
+    def test_init_repo_merges_ads_quick_start_into_existing_readme(self, tmp_path):
+        target_root = tmp_path / "existing-readme"
+        target_root.mkdir(parents=True)
+        (target_root / "README.md").write_text("# Existing Project\n\nOriginal content.\n", encoding="utf-8")
+
+        ads_init.init_repo(target_root, source_root=REPO_ROOT)
+
+        readme = (target_root / "README.md").read_text(encoding="utf-8")
+        assert "ADS Agent Quick Start" in readme
+        assert "Original content." in readme
 
     def test_init_repo_infers_node_verify_commands(self, tmp_path):
         target_root = tmp_path / "arcade"

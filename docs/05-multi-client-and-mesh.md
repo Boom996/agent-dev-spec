@@ -4,8 +4,8 @@
 
 | 客户端类型 | 建议做法 |
 |------------|----------|
-| IDE 类（Cursor 等） | 项目规则中引用 `README_AGENT.md` 与 `tools/mcp/`；首读链写死 |
-| Claude Code / 终端 Agent | 启动时 `cat README_AGENT.md`；任务从 `.ai/tasks` 读取 |
+| IDE 类（Cursor 等） | 项目规则中引用根 `README.md` 与 `tools/mcp/`；首读链写死 |
+| Claude Code / 终端 Agent | 启动时先读根 `README.md`；任务从 `.ai/tasks` 读取 |
 | Codex CLI / 其他无状态 CLI | 使用 [04-handoff-and-tasks.md](04-handoff-and-tasks.md) 的上下文包 + `handoff.md` |
 | Web 类（GPTs / Projects） | 上传压缩后的 `docs` + specs；Actions 指向 OpenAPI 或 Proxy |
 

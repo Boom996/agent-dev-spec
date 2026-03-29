@@ -162,7 +162,7 @@ def build_guidance(
 ) -> JSON:
     read_this_first = unique_strings(
         [
-            "README_AGENT.md",
+            str(docs_entry.get("readme", "README.md")),
             ".ai/START_HERE.md" if (repo_root / ".ai" / "START_HERE.md").exists() else "",
             ".agent/constitution.md" if (repo_root / ".agent" / "constitution.md").exists() else "",
             str(docs_entry.get("project_brief", "")),

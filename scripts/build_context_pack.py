@@ -187,7 +187,7 @@ def build_pack(task_path: Path, handoff_path: Path | None, identity_path: Path |
     lines.extend(verify_commands or ["(no standard verify commands found)"])
     lines.append("[CONTEXT_FILES]")
     lines.append(f"- {task_path.relative_to(REPO_ROOT)} (full task contract)")
-    lines.append("- README_AGENT.md (repo root)")
+    lines.append("- README.md (repo root)")
 
     if handoff_path and handoff_path.exists():
         handoff_text = read_text(handoff_path)

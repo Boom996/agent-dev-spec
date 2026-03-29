@@ -15,8 +15,9 @@
     "build": "npm run build"
   },
   "docs_entry": {
-    "readme_agent": "README_AGENT.md",
+    "readme": "README.md",
     "ai_context": "docs/03-development/ai-context.md",
+    "project_brief": ".agent/docs/guides/project-brief.md",
     "start_here": ".ai/START_HERE.md"
   }
 }

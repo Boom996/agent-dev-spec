@@ -15,7 +15,7 @@ Cursor 适合把 ADS 用作：
 
 ## 推荐入口
 
-1. `README_AGENT.md`
+1. `README.md`
 2. `.agent/constitution.md`
 3. `.ai/START_HERE.md`
 4. 当前 task 与 handoff

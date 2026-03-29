@@ -22,7 +22,7 @@
 
 **P0（协作纪律）**
 
-- 根目录 `README_AGENT.md`
+- 根目录 `README.md`（包含 `ADS Agent Quick Start` 区块）
 - `.ai/tasks/` + `.ai/handoffs/`
 - `templates/task.md` / `handoff.md`（可放在 `.ai/templates/`）
 

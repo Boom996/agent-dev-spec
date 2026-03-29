@@ -8,6 +8,25 @@ ADS 是一套面向真实开发项目的 **Agent 工程协同规范与落地工�
 - 希望把 Agent 能力接入现有业务项目，而不是另建一套平台
 - 希望跨客户端复用同一套工具注册、任务协议和 handoff 机制
 
+<!-- ADS:START -->
+## ADS Agent Quick Start
+
+> 如果你是第一次读到这个仓库的人类开发者或 Agent，请把本区块当成唯一入口。
+
+1. 先读当前根 `README.md`，理解 ADS 的目标、接入方式和安全边界。
+2. 如果你要把 ADS 接到另一个项目，优先在目标项目根目录执行 `python3 /path/to/agent-dev-spec/scripts/ads_self_install.py`。
+3. 接入前先提醒作者提交并优先上传当前本地修改，再创建新的 git 分支做接入。
+4. 接入后先读目标项目根 `README.md` 中的 `ADS Agent Quick Start`，再读 `.ai/START_HERE.md`、`.agent/constitution.md`、`.agent/docs/guides/project-brief.md`。
+5. 开始真实开发前，先跑 `python3 scripts/ads_explain.py`、`python3 scripts/ads_doctor.py`、`python3 scripts/validate_ads.py`，必要时再开 `python3 scripts/ads_dashboard.py`。
+
+### Entry Docs
+
+- `README.md`
+- `docs/guides/adoption-playbook.md`
+- `docs/guides/client-adapters/codex-cli.md`
+- `docs/00-overview.md`
+<!-- ADS:END -->
+
 ## ADS 解决什么问题
 
 典型失败模式包括：
@@ -19,7 +38,7 @@ ADS 是一套面向真实开发项目的 **Agent 工程协同规范与落地工�
 
 ADS 把这些问题收敛为一套简单但可执行的资产：
 
-- `README_AGENT.md` 作为仓库级自举入口
+- 根 `README.md` 作为唯一仓库级自举入口
 - `.ai/` 作为协作工作区
 - `.agent/` 作为工程元数据与规范镜像
 - `tools/toolset.json` + `skills/*/manifest.json` 作为统一工具注册层
@@ -43,7 +62,7 @@ ADS 把这些问题收敛为一套简单但可执行的资产：
 
 ## 10 分钟接入路径
 
-如果你是“在另一个项目里工作的 Agent”，拿到了 ADS 的 git 链接，推荐先 clone ADS 仓库，然后在**目标项目根目录**执行：
+如果你是“在另一个项目里工作的 Agent”，拿到了 ADS 的 git 链接，请先阅读这份根 `README.md`，然后在**目标项目根目录**执行：
 
 ```bash
 python3 /path/to/agent-dev-spec/scripts/ads_self_install.py
@@ -60,7 +79,7 @@ python3 /path/to/agent-dev-spec/scripts/ads_self_install.py
 1. 如果是新项目或干净仓库，执行 `python3 scripts/ads_init.py /path/to/your-project`。
 2. 如果是已有协作资产的存量项目，先执行 `python3 scripts/ads_adopt.py /path/to/your-project` 获取试用判断报告；如需保留接入报告，可追加 `--report-file` / `--json-file`；确认后再用 `--apply` 自动写入 ADS 骨架。
    完成后会自动生成项目级首读摘要：`.agent/docs/guides/project-brief.md`
-3. 让所有参与协作的人先阅读宿主仓库根部的 [`README_AGENT.md`](README_AGENT.md)。
+3. 让所有参与协作的人先阅读宿主仓库根部的 `README.md`，确认其中的 `ADS Agent Quick Start` 区块。
 4. 修改宿主仓库的 `.agent/identity.json`、`.agent/constitution.md`、`.ai/START_HERE.md`。
 5. 用一个真实任务跑通 task -> evidence -> handoff -> QA。
 6. 在宿主仓库先执行 `python3 scripts/ads_explain.py`，确认项目使命、协作状态与首读顺序。
@@ -75,7 +94,6 @@ python3 /path/to/agent-dev-spec/scripts/ads_self_install.py
 ```
 agent-dev-spec/
 ├── README.md
-├── README_AGENT.md
 ├── docs/
 ├── templates/
 ├── .agent/
@@ -96,6 +114,7 @@ agent-dev-spec/
 
 ## 推荐阅读顺序
 
+- 根 `README.md` 中的 `ADS Agent Quick Start`
 - [`docs/00-overview.md`](docs/00-overview.md)
 - [`docs/01-principles.md`](docs/01-principles.md)
 - [`docs/04-handoff-and-tasks.md`](docs/04-handoff-and-tasks.md)

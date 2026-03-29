@@ -53,7 +53,7 @@ class SelfInstallSummary:
             f"- dashboard_url: `{self.dashboard_url}`",
             "",
             "## Entry Files",
-            "- `README_AGENT.md`",
+            "- `README.md`",
             "- `.agent/identity.json`",
             "- `.ai/START_HERE.md`",
             "- `.agent/docs/guides/project-brief.md`",

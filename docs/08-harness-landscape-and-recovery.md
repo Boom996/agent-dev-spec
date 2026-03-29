@@ -27,7 +27,7 @@ ADS 的核心价值，是把 **规划、任务、handoff、证据、治理、工
 
 - 任务、handoff、memory、spec、request、qa 都有结构化文件
 - 工具声明进 `tools/toolset.json`
-- 规则沉淀进 `README_AGENT.md`、`.agent/constitution.md`
+- 规则沉淀进根 `README.md`、`.agent/constitution.md`
 
 ### 2. 让不同客户端共享一套协作语义
 

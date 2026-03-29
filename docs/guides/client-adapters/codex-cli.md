@@ -7,7 +7,7 @@
 
 Codex CLI 在 ADS 体系里最适合承担三类动作：
 
-- 消费 `README_AGENT.md`、task、handoff 等 repo-native 文档
+- 消费根 `README.md`、task、handoff 等 repo-native 文档
 - 运行 ADS CLI 工具，生成 resume / handoff / evidence 等结构化工件
 - 在同一工作树内完成实现、验证、提交与交接
 
@@ -21,7 +21,7 @@ Codex CLI 在 ADS 体系里最适合承担三类动作：
 
 进入一个 ADS 项目后，优先读取：
 
-1. `README_AGENT.md`
+1. `README.md`
 2. `.agent/constitution.md`
 3. `.ai/START_HERE.md`
 4. `.ai/tasks/active/<task-id>.md`
@@ -148,7 +148,7 @@ python3 scripts/sync-tools.py
 
 ## 推荐实践
 
-- 让 `README_AGENT.md` 成为固定首读入口，不依赖聊天历史
+- 让根 `README.md` 成为固定首读入口，不依赖聊天历史
 - 用 `ads_resume.py` 代替人工总结上下文，减少会话切换损耗
 - 用 `ads_handoff_draft.py` 先生成草稿，再由执行者补充真实状态和证据
 - 将 `python3 scripts/sync-tools.py --check` 纳入 CI，避免 `toolset.json` 漂移

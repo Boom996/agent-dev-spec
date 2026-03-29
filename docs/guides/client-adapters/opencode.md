@@ -17,7 +17,7 @@ OpenCode 一类客户端通常具备：
 
 在项目根的 `AGENTS.md` 中显式引用：
 
-- `README_AGENT.md`
+- `README.md`
 - `.agent/constitution.md`
 - `.ai/START_HERE.md`
 

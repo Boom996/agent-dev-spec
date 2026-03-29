@@ -7,6 +7,8 @@ import argparse
 import re
 from pathlib import Path
 
+import ads_init
+
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -35,11 +37,18 @@ def discover(repo_root: Path, pattern: str) -> list[Path]:
 
 def infer_workspace_status(repo_root: Path) -> str:
     required = [
-        repo_root / "README_AGENT.md",
+        repo_root / "README.md",
         repo_root / ".ai" / "START_HERE.md",
         repo_root / ".agent" / "constitution.md",
     ]
-    present = sum(1 for path in required if path.exists())
+    present = 0
+    for path in required:
+        if path.name == "README.md":
+            if ads_init.has_ads_readme_block(path):
+                present += 1
+            continue
+        if path.exists():
+            present += 1
     if present == len(required):
         return "ads_ready"
     if present:
@@ -66,7 +75,7 @@ def load_docs_entry(repo_root: Path) -> dict[str, str]:
         return {}
     block = docs_entry_match.group(1)
     entries: dict[str, str] = {}
-    for key in ("readme_agent", "ai_context", "project_brief", "start_here"):
+    for key in ("readme", "ai_context", "project_brief", "start_here"):
         match = re.search(rf'"{key}"\s*:\s*"([^"]+)"', block)
         if match:
             entries[key] = match.group(1)
@@ -124,7 +133,7 @@ def build_explanation(repo_root: Path = REPO_ROOT) -> str:
         f"- qa_records: {len(qas)}",
         "",
         "## Read This First",
-        "- README_AGENT.md",
+        "- README.md",
         "- .ai/START_HERE.md" if (repo_root / ".ai" / "START_HERE.md").exists() else "- .ai/START_HERE.md (missing)",
         "- .agent/constitution.md" if (repo_root / ".agent" / "constitution.md").exists() else "- .agent/constitution.md (missing)",
     ]

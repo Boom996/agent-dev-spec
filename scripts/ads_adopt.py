@@ -225,7 +225,6 @@ def detect_existing_systems(target_root: Path) -> list[str]:
         (".golutra", "golutra_workspace"),
         (".superpowers", "superpowers_workspace"),
         ("docs/superpowers", "superpowers_docs"),
-        ("README_AGENT.md", "ads_readme_agent"),
         ("tools/toolset.json", "ads_toolset"),
         (".agent/identity.json", "ads_identity"),
         (".ai/START_HERE.md", "ads_start_here"),
@@ -233,6 +232,8 @@ def detect_existing_systems(target_root: Path) -> list[str]:
     for rel, name in checks:
         if (target_root / rel).exists():
             systems.append(name)
+    if ads_init.has_ads_readme_block(target_root / "README.md"):
+        systems.append("ads_root_readme")
     for path in iter_files(target_root, {"AGENTS.md", "CLAUDE.md"}, max_depth=5):
         systems.append(relative_to(target_root, path))
     return systems
@@ -316,7 +317,7 @@ def build_trial_path(primary: CodeRoot, primary_context: str) -> list[str]:
 
 def build_trial_success_checks(primary: CodeRoot) -> list[str]:
     return [
-        "README_AGENT.md、.agent/identity.json、.ai/START_HERE.md 已生成并指向真实项目语义。",
+        "README.md、.agent/identity.json、.ai/START_HERE.md 已生成并指向真实项目语义。",
         "可以运行 doctor / validate，且不出现结构性错误。",
         f"围绕 `{primary.path}` 已经能创建并推进第一个真实 ADS task。",
     ]
@@ -384,7 +385,7 @@ def build_report(target_root: Path, project_name: str | None = None) -> Adoption
         trial_success_checks=trial_success_checks,
         apply_next_commands=apply_next_commands,
         docs_entry={
-            "readme_agent": "README_AGENT.md",
+            "readme": "README.md",
             "ai_context": primary_context,
             "project_brief": ".agent/docs/guides/project-brief.md",
             "start_here": ".ai/START_HERE.md",
@@ -457,60 +458,6 @@ def write_report_files(report: AdoptionReport, markdown_path: Path | None, json_
         write_text(json_path, render_report_json(report))
         written.append(json_path)
     return written
-
-
-def render_readme_agent(report: AdoptionReport) -> str:
-    context_doc = report.docs_entry.get("ai_context", ".agent/docs/guides/project-adoption-report.md")
-    project_brief = report.docs_entry.get("project_brief", ".agent/docs/guides/project-brief.md")
-    lines = [
-        "# Agent 自举入口（ADS）",
-        "",
-        f"> 本项目已接入 **ADS（Agent Development Specification）**。当前产品目标：{report.vision_one_liner}",
-        "",
-        "## 本项目工作区约定",
-        "",
-        f"- **项目名**：`{report.project_name}`",
-        f"- **工作区根目录**：`{report.workspace_root_name}/`",
-        f"- **主代码根**：`{report.primary_code_root}`",
-        "- **统一协作区**：`.ai/`、`.agent/`、`tools/`、`skills/`",
-        "- **旧协作资产**：保留原有 docs / handoff / orchestration 资料，优先映射，不直接删除",
-        "",
-        "## 首读顺序",
-        "",
-        "1. **本文件**（`README_AGENT.md`）",
-        f"2. **项目首读摘要**（`{project_brief}`）",
-        f"3. **项目主上下文**（`{context_doc}`）",
-        "4. **迁移映射说明**（`.agent/docs/guides/legacy-workspace-mapping.md`）",
-        "5. **ADS 当前协作入口**（`.ai/START_HERE.md`）",
-    ]
-    if report.legacy_handoffs:
-        lines.append(f"6. **历史交接文档**（`{report.legacy_handoffs[0]}`）")
-    lines.extend(
-        [
-            "",
-            "## 你必须遵守的纪律",
-            "",
-            "1. 先按 ADS 入口阅读，不要直接只看聊天历史。",
-            f"2. 实现工作默认在 **`{report.primary_code_root}`** 下展开，除非 task 明确允许其他路径。",
-            "3. 旧文档仍有效，但新增协作信息应优先沉淀到 ADS 结构化工件中。",
-            "",
-            "## 标准验证命令",
-            "",
-        ]
-    )
-    for name, command in report.verify_commands.items():
-        lines.append(f"- `{name}`: `{command}`")
-    lines.extend(
-        [
-            "",
-            "## 不确定时",
-            "",
-            "- 先看 `.agent/docs/guides/project-brief.md`",
-            "- 先看 `.agent/docs/guides/project-adoption-report.md`",
-            "- 再看 `.agent/docs/00-overview.md` 与 `.agent/docs/guides/adoption-playbook.md`",
-        ]
-    )
-    return "\n".join(lines) + "\n"
 
 
 def render_start_here(report: AdoptionReport) -> str:
@@ -683,7 +630,7 @@ def render_adoption_task(report: AdoptionReport) -> str:
         "- **locked_paths**（本任务周期内仅主责可改）：",
         "  - `.agent/` — ADS 治理和项目映射",
         "  - `.ai/` — ADS 协作工件",
-        "  - `README_AGENT.md` — 仓库级 Agent 入口",
+        "  - `README.md` — 仓库级 Agent 入口",
         "- **forbidden_paths**（禁止改动）：",
         f"  - `{report.primary_code_root}` — 先完成协作层接入，再修改业务实现",
         "",
@@ -705,7 +652,7 @@ def render_adoption_task(report: AdoptionReport) -> str:
         "",
         "| 路径 | 说明 |",
         "|------|------|",
-        "| `README_AGENT.md` | 仓库级 Agent 入口 |",
+        "| `README.md` | 仓库级 Agent 入口 |",
         "| `.agent/docs/guides/project-adoption-report.md` | 当前宿主项目接入报告 |",
         "| `.agent/docs/guides/legacy-workspace-mapping.md` | 旧工作区到 ADS 的映射说明 |",
         "",
@@ -738,7 +685,7 @@ def render_apply_summary(report: AdoptionReport) -> str:
         f"- 接入模式：`{report.recommended_mode}`",
         "",
         "## What You Have Now",
-        "- `README_AGENT.md` 已生成，可作为仓库级 Agent 入口。",
+        "- `README.md` 已写入 ADS Quick Start 区块，可作为仓库级 Agent 入口。",
         "- `.agent/docs/guides/project-brief.md` 与 `.agent/docs/guides/project-adoption-report.md` 已生成。",
         "- `.ai/START_HERE.md` 与 adoption backlog task 已生成。",
         "",
@@ -754,7 +701,7 @@ def render_apply_summary(report: AdoptionReport) -> str:
         [
             "",
             "## Entry Files",
-            "- `README_AGENT.md`",
+            "- `README.md`",
             "- `.agent/docs/guides/project-brief.md`",
             "- `.agent/docs/guides/project-adoption-report.md`",
             "- `.ai/tasks/backlog/`",
@@ -766,7 +713,7 @@ def render_apply_summary(report: AdoptionReport) -> str:
 def apply_adoption(target_root: Path, force: bool = False, project_name: str | None = None) -> tuple[AdoptionReport, ads_init.InitResult]:
     report = build_report(target_root, project_name=project_name)
     existing_before = {
-        target_root / "README_AGENT.md",
+        target_root / "README.md",
         target_root / ".agent" / "identity.json",
         target_root / ".agent" / "constitution.md",
         target_root / ".ai" / "START_HERE.md",
@@ -791,7 +738,6 @@ def apply_adoption(target_root: Path, force: bool = False, project_name: str | N
         should_force = force or not existed_map.get(path, False)
         ads_init.maybe_write(path, content, should_force, result)
 
-    write_generated(target_root / "README_AGENT.md", render_readme_agent(report))
     write_generated(target_root / ".agent" / "identity.json", json.dumps(identity, ensure_ascii=False, indent=2) + "\n")
     write_generated(target_root / ".agent" / "constitution.md", render_constitution(report))
     write_generated(target_root / ".ai" / "START_HERE.md", render_start_here(report))
@@ -814,6 +760,17 @@ def apply_adoption(target_root: Path, force: bool = False, project_name: str | N
     write_generated(
         target_root / ".ai" / "tasks" / "backlog" / "TASK-00000000-001-ads-adoption.md",
         render_adoption_task(report),
+    )
+    ads_init.write_root_readme(
+        target_root,
+        result,
+        force=force,
+        project_name=report.project_name,
+        vision_one_liner=report.vision_one_liner,
+        primary_code_root=report.primary_code_root,
+        project_brief=report.docs_entry.get("project_brief", ".agent/docs/guides/project-brief.md"),
+        ai_context=report.docs_entry.get("ai_context", ".agent/docs/guides/project-adoption-report.md"),
+        include_legacy_mapping=True,
     )
     return report, result
 

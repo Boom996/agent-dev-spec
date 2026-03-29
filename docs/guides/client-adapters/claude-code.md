@@ -20,7 +20,7 @@ Claude Code 在 ADS 客户端中具备最强的自动化能力：
 # [项目名] — ADS 协作入口
 
 ## ADS 规范
-@README_AGENT.md
+@README.md
 
 ## ADS 宪法
 @.agent/constitution.md

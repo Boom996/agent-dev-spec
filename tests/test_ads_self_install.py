@@ -99,7 +99,7 @@ class TestAdsSelfInstall:
         assert summary.branch_name.startswith("chore/ads-adoption-trial")
         assert summary.initial_branch == "main"
         assert run_git(target_root, "branch", "--show-current") == summary.branch_name
-        assert (target_root / "README_AGENT.md").exists()
+        assert (target_root / "README.md").exists()
         assert (target_root / ".agent" / "identity.json").exists()
         assert (target_root / ".ai" / "START_HERE.md").exists()
 
@@ -117,4 +117,4 @@ class TestAdsSelfInstall:
         assert summary.validate_ok is True
         assert summary.doctor_findings == []
         assert summary.dashboard_url == "http://127.0.0.1:8876"
-        assert "README_AGENT.md" in summary.render_summary()
+        assert "README.md" in summary.render_summary()

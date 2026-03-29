@@ -233,7 +233,7 @@ class TestAdsDashboard:
         assert snapshot["focus"]["task_id"] == "TASK-20260326-401"
         assert snapshot["focus"]["next_action"] == "执行集成验证"
         assert snapshot["guidance"]["workspace_label"] == "ADS 已接入"
-        assert "README_AGENT.md" in snapshot["guidance"]["read_this_first"]
+        assert "README.md" in snapshot["guidance"]["read_this_first"]
         assert "python3 scripts/ads_dashboard.py" in snapshot["guidance"]["next_commands"]
         assert snapshot["homepage"]["project_home_title"] == "项目首页"
         assert snapshot["homepage"]["control_panel_title"] == "今日控制台"
@@ -254,7 +254,7 @@ class TestAdsDashboard:
         assert "今日控制台" in html
         assert "新成员入口" in html
         assert "续做成员入口" in html
-        assert "README_AGENT.md" in html
+        assert "README.md" in html
         assert "python3 scripts/ads_doctor.py" in html
         assert "行动入口" in html
         assert "AgentGames" in html

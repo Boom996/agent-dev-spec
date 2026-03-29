@@ -97,7 +97,7 @@ class TestAdsAdopt:
 
         assert result.created
         assert report.primary_code_root == "agentgames"
-        assert (target_root / "README_AGENT.md").exists()
+        assert (target_root / "README.md").exists()
         assert (target_root / ".agent" / "identity.json").exists()
         assert (target_root / ".agent" / "adoption-report.json").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "project-brief.md").exists()
@@ -111,11 +111,11 @@ class TestAdsAdopt:
         assert identity["docs_entry"]["ai_context"] == "docs/superpowers/specs/2026-03-24-agent-maze-project-guide.md"
         assert identity["docs_entry"]["project_brief"] == ".agent/docs/guides/project-brief.md"
 
-        readme_agent = (target_root / "README_AGENT.md").read_text(encoding="utf-8")
-        assert "项目名" in readme_agent
-        assert "agentgames" in readme_agent
-        assert ".agent/docs/guides/project-brief.md" in readme_agent
-        assert ".agent/docs/guides/legacy-workspace-mapping.md" in readme_agent
+        readme = (target_root / "README.md").read_text(encoding="utf-8")
+        assert "ADS Agent Quick Start" in readme
+        assert "agentgames" in readme
+        assert ".agent/docs/guides/project-brief.md" in readme
+        assert ".agent/docs/guides/legacy-workspace-mapping.md" in readme
 
         project_brief = (target_root / ".agent" / "docs" / "guides" / "project-brief.md").read_text(encoding="utf-8")
         assert "# ADS Project Brief" in project_brief
@@ -129,7 +129,7 @@ class TestAdsAdopt:
         summary = ads_adopt.render_apply_summary(report)
         assert "## Trial Ready Summary" in summary
         assert "python3 scripts/ads_doctor.py" in summary
-        assert "README_AGENT.md" in summary
+        assert "README.md" in summary
 
     def test_write_report_files_emits_markdown_and_json(self, tmp_path):
         target_root = build_brownfield_repo(tmp_path)

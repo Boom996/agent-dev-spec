@@ -10,6 +10,8 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 
+import ads_init
+
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
@@ -107,8 +109,9 @@ def load_skill_manifests(repo_root: Path) -> list[tuple[Path, dict]]:
 
 def check_required_files(repo_root: Path) -> list[Finding]:
     findings: list[Finding] = []
+    if not ads_init.has_ads_readme_block(repo_root / "README.md"):
+        findings.append(Finding("fail", "missing_readme", "missing ADS Quick Start block in `README.md`"))
     required_files = [
-        ("fail", "missing_readme_agent", repo_root / "README_AGENT.md"),
         ("fail", "missing_constitution", repo_root / ".agent" / "constitution.md"),
         ("warn", "missing_identity", repo_root / ".agent" / "identity.json"),
         ("warn", "missing_start_here", repo_root / ".ai" / "START_HERE.md"),

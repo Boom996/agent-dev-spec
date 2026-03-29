@@ -295,7 +295,7 @@ def build_resume(task_path: Path, handoff_path: Path | None, identity_path: Path
 
     lines.append("")
     lines.append("## Resume Checklist")
-    lines.append("- Re-open README_AGENT.md and the task contract before editing.")
+    lines.append("- Re-open README.md and the task contract before editing.")
     lines.append("- Stay inside LOCKED_PATHS and avoid FORBIDDEN_PATHS.")
     if verify_commands:
         lines.append("- Standard verify commands:")

@@ -24,7 +24,7 @@
 
 ## 纪律提醒
 
-1. 先读仓库根目录 **`README_AGENT.md`**
+1. 先读仓库根目录 **`README.md`** 中的 **`ADS Agent Quick Start`**
 2. 交接必须写入 **`handoffs/<task-id>.md`**
 3. 完成任务前补齐 **证据**（见任务模板 `evidence_expectation`）
 

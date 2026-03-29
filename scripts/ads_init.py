@@ -10,9 +10,10 @@ from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+ADS_README_START = "<!-- ADS:START -->"
+ADS_README_END = "<!-- ADS:END -->"
 
 COPY_MAP = {
-    "README_AGENT.md": "README_AGENT.md",
     ".ai/README.md": ".ai/README.md",
     ".ai/templates/README.md": ".ai/templates/README.md",
     ".ai/patterns/frontend-backend-integration.md": ".ai/patterns/frontend-backend-integration.md",
@@ -227,17 +228,128 @@ def render_start_here(source_root: Path) -> str:
     return text
 
 
-def render_readme_agent(source_root: Path) -> str:
-    text = read_text(source_root / "README_AGENT.md")
-    text = text.replace(
-        "采用与 ADS 兼容的目录（参见本仓库 `docs/02-uaw-mapping.md`）。",
-        "采用与 ADS 兼容的目录（参见 `.agent/docs/02-uaw-mapping.md`）。",
+def has_ads_readme_block(path: Path) -> bool:
+    if not path.exists():
+        return False
+    text = read_text(path)
+    return ADS_README_START in text and ADS_README_END in text
+
+
+def render_root_readme_block(
+    *,
+    project_name: str,
+    vision_one_liner: str | None = None,
+    primary_code_root: str | None = None,
+    project_brief: str = ".agent/docs/guides/project-brief.md",
+    ai_context: str = ".agent/docs/guides/project-adoption-report.md",
+    include_legacy_mapping: bool = False,
+) -> str:
+    lines = [
+        ADS_README_START,
+        "## ADS Agent Quick Start",
+        "",
+    ]
+    if vision_one_liner:
+        lines.append(f"> 本项目已接入 **ADS（Agent Development Specification）**。当前产品目标：{vision_one_liner}")
+        lines.append("")
+    lines.extend(
+        [
+            "如果你是刚进入本仓库的人类开发者或 Agent，请先按这个顺序行动：",
+            "",
+            "1. 先读当前根 `README.md`，确认项目目标和 ADS 入口。",
+            f"2. 再读 `{project_brief}`。",
+            f"3. 再读 `{ai_context}`。",
+            "4. 再读 `.ai/START_HERE.md` 与 `.agent/constitution.md`。",
+            "5. 进入真实 task 前，先确认 `.agent/identity.json` 里的 verify commands。",
+            "",
+            "### Workspace",
+            "",
+            f"- 项目名：`{project_name}`",
+            f"- 主代码根：`{primary_code_root or '.'}`",
+            "- 协作工作区：`.ai/`、`.agent/`、`tools/`、`skills/`",
+        ]
     )
-    text = text.replace(
-        "打开本仓库 **`docs/00-overview.md`**，按索引阅读细则。",
-        "优先打开 **`.agent/docs/guides/adoption-playbook.md`** 完成接入，再按 **`.agent/docs/00-overview.md`** 的索引阅读细则。",
+    if include_legacy_mapping:
+        lines.append("- 迁移映射：`.agent/docs/guides/legacy-workspace-mapping.md`")
+    lines.extend(
+        [
+            "",
+            "### Safety Rules",
+            "",
+            "- 接入 ADS 前，先提醒作者提交并优先上传当前本地修改。",
+            "- 优先在新的 git 分支中接入，不要直接在主分支改造。",
+            "- 标记完成前必须留下 evidence / handoff，不要只依赖聊天历史。",
+            "",
+            "### Recommended Commands",
+            "",
+            "- `python3 scripts/ads_explain.py`",
+            "- `python3 scripts/ads_doctor.py`",
+            "- `python3 scripts/validate_ads.py`",
+            "- `python3 scripts/ads_dashboard.py`",
+            "",
+            "### Adoption Docs",
+            "",
+            "- `.agent/docs/guides/adoption-playbook.md`",
+            "- `.agent/docs/00-overview.md`",
+            "- `.agent/docs/guides/client-adapters/codex-cli.md`",
+            ADS_README_END,
+            "",
+        ]
     )
-    return text
+    return "\n".join(lines)
+
+
+def merge_readme(existing_text: str, ads_block: str) -> str:
+    normalized = existing_text.rstrip()
+    if ADS_README_START in normalized and ADS_README_END in normalized:
+        start = normalized.index(ADS_README_START)
+        end = normalized.index(ADS_README_END) + len(ADS_README_END)
+        merged = normalized[:start].rstrip()
+        suffix = normalized[end:].lstrip()
+        parts = [merged, ads_block.rstrip()]
+        if suffix:
+            parts.append(suffix)
+        return "\n\n".join(part for part in parts if part) + "\n"
+    if not normalized:
+        return ads_block
+    return normalized + "\n\n" + ads_block
+
+
+def write_root_readme(
+    target_root: Path,
+    result: InitResult,
+    *,
+    force: bool,
+    project_name: str,
+    vision_one_liner: str | None = None,
+    primary_code_root: str | None = None,
+    project_brief: str = ".agent/docs/guides/project-brief.md",
+    ai_context: str = ".agent/docs/guides/project-adoption-report.md",
+    include_legacy_mapping: bool = False,
+) -> None:
+    path = target_root / "README.md"
+    ads_block = render_root_readme_block(
+        project_name=project_name,
+        vision_one_liner=vision_one_liner,
+        primary_code_root=primary_code_root,
+        project_brief=project_brief,
+        ai_context=ai_context,
+        include_legacy_mapping=include_legacy_mapping,
+    )
+    if path.exists():
+        existing = read_text(path)
+        if force and not has_ads_readme_block(path):
+            new_text = f"# {project_name}\n\n{ads_block}"
+        else:
+            new_text = merge_readme(existing, ads_block)
+        if new_text == existing:
+            result.skipped.append(path)
+            return
+        result.overwritten.append(path)
+        write_text(path, new_text)
+        return
+    result.created.append(path)
+    write_text(path, f"# {project_name}\n\n{ads_block}")
 
 
 def maybe_write(path: Path, content: str, force: bool, result: InitResult) -> None:
@@ -261,14 +373,22 @@ def ensure_dir(path: Path, result: InitResult) -> None:
 def init_repo(target_root: Path, source_root: Path = REPO_ROOT, force: bool = False, project_name: str | None = None) -> InitResult:
     result = InitResult()
     target_root.mkdir(parents=True, exist_ok=True)
+    resolved_project_name = project_name or target_root.name
 
     for directory in GENERATED_DIRS:
         ensure_dir(target_root / directory, result)
 
-    maybe_write(target_root / ".agent" / "identity.json", build_identity(source_root, target_root, project_name), force, result)
+    maybe_write(target_root / ".agent" / "identity.json", build_identity(source_root, target_root, resolved_project_name), force, result)
     maybe_write(target_root / ".ai" / "START_HERE.md", render_start_here(source_root), force, result)
-    maybe_write(target_root / "README_AGENT.md", render_readme_agent(source_root), force, result)
     maybe_write(target_root / "tools" / "toolset.json", build_toolset(), force, result)
+    write_root_readme(
+        target_root,
+        result,
+        force=force,
+        project_name=resolved_project_name,
+        project_brief=".agent/docs/guides/adoption-playbook.md",
+        ai_context=".agent/docs/00-overview.md",
+    )
 
     for source_rel, target_rel in COPY_MAP.items():
         source_path = source_root / source_rel

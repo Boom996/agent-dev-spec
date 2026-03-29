@@ -61,7 +61,7 @@ flowchart TB
 ## 如何使用本模板
 
 1. 复制 `agent-dev-spec` 到项目根或子目录。  
-2. 将 `README_AGENT.md` 置于**仓库根**（或与团队约定唯一入口路径）。  
+2. 将根 `README.md` 作为**唯一入口**，并维护其中的 `ADS Agent Quick Start` 区块。  
 3. 用 `templates/` 与 `.ai/templates/` 生成真实任务与交接文件。  
 4. 按 [01-principles.md](01-principles.md) 落实单写者与 Integration 闸口。
 

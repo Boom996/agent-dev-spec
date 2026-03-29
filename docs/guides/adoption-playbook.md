@@ -61,7 +61,7 @@ python3 scripts/ads_adopt.py /path/to/your-project \
 
 完成后，宿主仓库会获得：
 
-- `README_AGENT.md`
+- `README.md` 中的 `ADS Agent Quick Start` 区块
 - `.agent/identity.json`
 - `.agent/docs/`
 - `.agent/adoption-report.json`
@@ -82,8 +82,8 @@ python3 scripts/ads_adopt.py /path/to/your-project \
 
 初始化后，优先修改这几个文件：
 
-- `README_AGENT.md`
-  说明本项目是什么、当前阶段是什么、Agent 先读什么文档
+- `README.md`
+  维护 `ADS Agent Quick Start` 区块，说明本项目是什么、当前阶段是什么、Agent 先读什么文档
 - `.agent/identity.json`
   定义项目目标、约束、默认验证命令、关键角色
 - `.agent/constitution.md`
@@ -183,7 +183,7 @@ python3 scripts/ads_dashboard.py
 ### Day 1
 
 - 完成骨架初始化
-- 让所有参与协作的人先读 `README_AGENT.md`
+- 让所有参与协作的人先读根 `README.md` 的 `ADS Agent Quick Start`
 - 用一个真实小任务跑通 task -> handoff -> QA
 
 ### Week 1
@@ -208,8 +208,8 @@ python3 scripts/ads_dashboard.py
 
 ## 落地检查清单
 
-- [ ] 宿主仓库已有 `README_AGENT.md`
-- [ ] `README_AGENT.md` 明确首读顺序
+- [ ] 宿主仓库 `README.md` 已包含 `ADS Agent Quick Start`
+- [ ] `README.md` 的 ADS 区块明确首读顺序
 - [ ] `.agent/identity.json` 已填写真实 verify commands
 - [ ] `.ai/START_HERE.md` 已根据宿主项目改写
 - [ ] `tools/toolset.json` 已纳入项目自有工具
