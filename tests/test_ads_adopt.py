@@ -78,6 +78,10 @@ class TestAdsAdopt:
         assert "agentgames" in report.nested_git_roots
         assert report.context_docs[0] == "docs/superpowers/specs/2026-03-24-agent-maze-project-guide.md"
         assert report.vision_one_liner == "Web 端 2D、多 Agent 羁绊驱动的异步观察 RPG"
+        assert report.adoption_fit == "recommended"
+        assert report.recommended_mode == "report_then_apply"
+        assert report.trial_path[0].startswith("先阅读")
+        assert "python3 scripts/ads_adopt.py" in report.apply_next_commands[0]
 
     def test_build_report_accepts_project_name_override(self, tmp_path):
         target_root = build_brownfield_repo(tmp_path)
@@ -122,6 +126,11 @@ class TestAdsAdopt:
         findings = ads_doctor.run_doctor(target_root)
         assert findings == []
 
+        summary = ads_adopt.render_apply_summary(report)
+        assert "## Trial Ready Summary" in summary
+        assert "python3 scripts/ads_doctor.py" in summary
+        assert "README_AGENT.md" in summary
+
     def test_write_report_files_emits_markdown_and_json(self, tmp_path):
         target_root = build_brownfield_repo(tmp_path)
         report = ads_adopt.build_report(target_root, project_name="AgentGames")
@@ -133,6 +142,10 @@ class TestAdsAdopt:
         assert markdown_path in written
         assert json_path in written
         assert "## Next Commands" in markdown_path.read_text(encoding="utf-8")
+        assert "## Trial Summary" in markdown_path.read_text(encoding="utf-8")
+        assert "## Recommended Mode" in markdown_path.read_text(encoding="utf-8")
+        assert "## Minimal Trial Path" in markdown_path.read_text(encoding="utf-8")
         data = json.loads(json_path.read_text(encoding="utf-8"))
         assert data["project_name"] == "AgentGames"
         assert data["workspace_root_name"] == "AgentGames"
+        assert data["adoption_fit"] == "recommended"

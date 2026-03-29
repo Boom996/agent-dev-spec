@@ -25,7 +25,7 @@
 python3 scripts/ads_init.py /path/to/your-project
 ```
 
-如果目标项目已经有自己的文档、handoff、Agent 入口或多层目录结构，先运行自动分析，再决定是否自动写入：
+如果目标项目已经有自己的文档、handoff、Agent 入口或多层目录结构，先运行自动分析，拿到试用判断报告，再决定是否自动写入：
 
 ```bash
 python3 scripts/ads_adopt.py /path/to/your-project
@@ -49,6 +49,13 @@ python3 scripts/ads_adopt.py /path/to/your-project \
 - `.ai/START_HERE.md`
 - `tools/toolset.json`
 - `scripts/ads_doctor.py`、`scripts/ads_resume.py`、`scripts/ads_handoff_draft.py` 等基础脚本
+
+`ads_adopt.py` 现在会优先告诉你：
+
+- 这个项目是否适合先试 ADS
+- 推荐采用什么接入方式
+- 最小试用路径是什么
+- apply 完成后先跑哪几个命令
 
 ### 2. 补齐宿主项目信息
 
@@ -82,6 +89,12 @@ python3 scripts/ads_adopt.py /path/to/your-project \
 - 这个项目为什么接入 ADS
 - 当前应该先读什么
 - 下一步该执行什么命令
+
+此外，`--apply` 结束时还会额外输出一段试用结果摘要，直接告诉你：
+
+- 当前已经具备哪些 ADS 入口
+- 先跑哪 3 个命令
+- 如何判断这次试用接入已经成功
 
 如果想先看参考样例，直接阅读 [`examples/README.md`](../../examples/README.md)。
 

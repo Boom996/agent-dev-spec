@@ -51,6 +51,12 @@ class AdoptionReport:
     code_roots: list[CodeRoot] = field(default_factory=list)
     risks: list[str] = field(default_factory=list)
     recommended_actions: list[str] = field(default_factory=list)
+    adoption_fit: str = "recommended"
+    adoption_summary: str = ""
+    recommended_mode: str = "report_then_apply"
+    trial_path: list[str] = field(default_factory=list)
+    trial_success_checks: list[str] = field(default_factory=list)
+    apply_next_commands: list[str] = field(default_factory=list)
     docs_entry: dict[str, str] = field(default_factory=dict)
 
 
@@ -292,6 +298,30 @@ def infer_vision_one_liner(target_root: Path, context_docs: list[Path]) -> str:
     return "用一句话描述产品或本仓库目标"
 
 
+def infer_adoption_fit(primary: CodeRoot, nested_git_roots: list[Path], context_docs: list[Path]) -> str:
+    if primary.path == "." and primary.verify_commands.get("test") == "TODO: add your standard verify command":
+        return "exploratory"
+    if nested_git_roots and not context_docs:
+        return "recommended_with_guardrails"
+    return "recommended"
+
+
+def build_trial_path(primary: CodeRoot, primary_context: str) -> list[str]:
+    return [
+        f"先阅读 `{primary_context}`，确认项目目标、现有上下文和迁移边界。",
+        f"运行 `python3 scripts/ads_adopt.py /path/to/your-project --apply --project-name <your-project-name>`，把 ADS 骨架落到仓库里。",
+        f"从 `.ai/tasks/backlog/` 选一个围绕 `{primary.path}` 的真实任务，跑通第一个 task -> evidence -> handoff 闭环。",
+    ]
+
+
+def build_trial_success_checks(primary: CodeRoot) -> list[str]:
+    return [
+        "README_AGENT.md、.agent/identity.json、.ai/START_HERE.md 已生成并指向真实项目语义。",
+        "可以运行 doctor / validate，且不出现结构性错误。",
+        f"围绕 `{primary.path}` 已经能创建并推进第一个真实 ADS task。",
+    ]
+
+
 def build_report(target_root: Path, project_name: str | None = None) -> AdoptionReport:
     nested_git_roots = detect_nested_git_roots(target_root)
     code_roots = detect_code_roots(target_root, nested_git_roots)
@@ -315,6 +345,23 @@ def build_report(target_root: Path, project_name: str | None = None) -> Adoption
     ]
 
     primary_context = relative_to(target_root, context_docs[0]) if context_docs else ".agent/docs/guides/project-adoption-report.md"
+    adoption_fit = infer_adoption_fit(primary, nested_git_roots, context_docs)
+    adoption_summary = (
+        f"`{target_root.name}` 适合先走 ADS 试用接入：已有可识别代码根、可复用上下文文档，且可以先把协作层接入到 `{primary.path}` 周围。"
+        if adoption_fit == "recommended"
+        else f"`{target_root.name}` 可以试 ADS，但需要先处理 nested git 或上下文边界，再决定 apply 范围。"
+        if adoption_fit == "recommended_with_guardrails"
+        else f"`{target_root.name}` 当前更适合先做分析，不建议直接全量 apply。"
+    )
+    recommended_mode = "report_then_apply" if adoption_fit != "exploratory" else "analyze_only_first"
+    trial_path = build_trial_path(primary, primary_context)
+    trial_success_checks = build_trial_success_checks(primary)
+    apply_next_commands = [
+        f"python3 scripts/ads_adopt.py {target_root} --apply --project-name {project_name or target_root.name}",
+        f"python3 scripts/ads_doctor.py --repo-root {target_root}",
+        f"python3 scripts/validate_ads.py",
+        f"python3 scripts/ads_dashboard.py --repo-root {target_root}",
+    ]
     return AdoptionReport(
         workspace_root=str(target_root),
         workspace_root_name=target_root.name,
@@ -330,6 +377,12 @@ def build_report(target_root: Path, project_name: str | None = None) -> Adoption
         code_roots=code_roots[:5],
         risks=risks,
         recommended_actions=recommended_actions,
+        adoption_fit=adoption_fit,
+        adoption_summary=adoption_summary,
+        recommended_mode=recommended_mode,
+        trial_path=trial_path,
+        trial_success_checks=trial_success_checks,
+        apply_next_commands=apply_next_commands,
         docs_entry={
             "readme_agent": "README_AGENT.md",
             "ai_context": primary_context,
@@ -343,14 +396,26 @@ def render_report_markdown(report: AdoptionReport) -> str:
     lines = [
         "# ADS Adoption Report",
         "",
+        "## Trial Summary",
+        f"- adoption_fit: `{report.adoption_fit}`",
+        f"- adoption_summary: {report.adoption_summary}",
+        f"- primary_code_root: `{report.primary_code_root}`",
+        "",
+        "## Recommended Mode",
+        f"- `{report.recommended_mode}`",
+        "",
+        "## Minimal Trial Path",
+    ]
+    lines.extend(f"- {item}" for item in report.trial_path)
+    lines.extend([
+        "",
         f"- workspace_root: `{report.workspace_root}`",
         f"- workspace_root_name: `{report.workspace_root_name}`",
         f"- project_name: `{report.project_name}`",
         f"- vision_one_liner: {report.vision_one_liner}",
-        f"- primary_code_root: `{report.primary_code_root}`",
         "",
         "## Verify Commands",
-    ]
+    ])
     for name, command in report.verify_commands.items():
         lines.append(f"- `{name}`: `{command}`")
     lines.extend(["", "## Existing Systems"])
@@ -371,8 +436,11 @@ def render_report_markdown(report: AdoptionReport) -> str:
             f"- Analyze only: `python3 scripts/ads_adopt.py {report.workspace_root}`",
             f"- Apply ADS bootstrap: `python3 scripts/ads_adopt.py {report.workspace_root} --apply --project-name {report.project_name}`",
             f"- Verify adopted repo: `python3 scripts/ads_doctor.py --repo-root {report.workspace_root}`",
+            "",
+            "## Trial Success Checks",
         ]
     )
+    lines.extend(f"- {item}" for item in report.trial_success_checks)
     return "\n".join(lines) + "\n"
 
 
@@ -661,6 +729,40 @@ def render_adoption_task(report: AdoptionReport) -> str:
     return "\n".join(lines) + "\n"
 
 
+def render_apply_summary(report: AdoptionReport) -> str:
+    lines = [
+        "## Trial Ready Summary",
+        "",
+        f"- 项目：`{report.project_name}`",
+        f"- 主代码根：`{report.primary_code_root}`",
+        f"- 接入模式：`{report.recommended_mode}`",
+        "",
+        "## What You Have Now",
+        "- `README_AGENT.md` 已生成，可作为仓库级 Agent 入口。",
+        "- `.agent/docs/guides/project-brief.md` 与 `.agent/docs/guides/project-adoption-report.md` 已生成。",
+        "- `.ai/START_HERE.md` 与 adoption backlog task 已生成。",
+        "",
+        "## Run These Next",
+        f"- `python3 scripts/ads_doctor.py --repo-root {report.workspace_root}`",
+        "- `python3 scripts/validate_ads.py`",
+        f"- `python3 scripts/ads_dashboard.py --repo-root {report.workspace_root}`",
+        "",
+        "## Trial Success Checks",
+    ]
+    lines.extend(f"- {item}" for item in report.trial_success_checks)
+    lines.extend(
+        [
+            "",
+            "## Entry Files",
+            "- `README_AGENT.md`",
+            "- `.agent/docs/guides/project-brief.md`",
+            "- `.agent/docs/guides/project-adoption-report.md`",
+            "- `.ai/tasks/backlog/`",
+        ]
+    )
+    return "\n".join(lines) + "\n"
+
+
 def apply_adoption(target_root: Path, force: bool = False, project_name: str | None = None) -> tuple[AdoptionReport, ads_init.InitResult]:
     report = build_report(target_root, project_name=project_name)
     existing_before = {
@@ -736,6 +838,7 @@ def main() -> int:
         write_report_files(report, args.report_file, args.json_file)
         print(render_report_markdown(report))
         ads_init.print_summary(result, target_root)
+        print(render_apply_summary(report))
         return 0
 
     report = build_report(target_root, project_name=args.project_name)

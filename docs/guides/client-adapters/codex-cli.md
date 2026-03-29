@@ -57,6 +57,18 @@ cd /path/to/target-repo
 python3 scripts/ads_doctor.py
 ```
 
+如果是存量项目，推荐先跑：
+
+```bash
+python3 scripts/ads_adopt.py /path/to/target-repo
+```
+
+先看试用判断报告，再决定是否执行：
+
+```bash
+python3 scripts/ads_adopt.py /path/to/target-repo --apply
+```
+
 ### 2. 恢复任务上下文
 
 ```bash
