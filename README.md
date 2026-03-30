@@ -1,6 +1,10 @@
 # Agent Development Specification
 
+[中文](README.md) | [English](README.en.md)
+
 ADS 是一套面向真实开发项目的 **Agent 工程协同规范与落地工具包**。它解决的不是“如何写一个提示词”，而是当多人类开发者、多个 Agent、多个客户端同时参与项目时，如何用一套 repo-native 的方式把 **任务、交接、证据、工具注册、共享记忆、最小治理** 固化到代码仓库里。
+
+对外公开的主入口以本 README、[`docs/README.md`](docs/README.md)、[`docs/guides/adoption-playbook.md`](docs/guides/adoption-playbook.md) 和客户端适配指南为主。`docs/superpowers/`、`docs/validation/` 更偏向内部研发与验证档案，不属于普通使用者的首读路径。
 
 它适合这些团队：
 
