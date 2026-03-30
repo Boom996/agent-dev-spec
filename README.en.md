@@ -11,7 +11,7 @@ Public entry points are intentionally focused on product-facing docs:
 - [`docs/guides/adoption-playbook.md`](docs/guides/adoption-playbook.md)
 - [`docs/guides/client-adapters/README.md`](docs/guides/client-adapters/README.md)
 
-Directories such as `docs/superpowers/` and `docs/validation/` are internal design and validation archives, not the primary onboarding path for normal adopters.
+Internal design and validation archives are maintained in a separate private repository and are not part of the public onboarding path.
 
 ADS is useful if your team:
 

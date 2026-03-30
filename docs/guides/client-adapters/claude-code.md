@@ -1,7 +1,7 @@
 # Claude Code Adapter Guide
 
 > 本文档是 ADS 协议的 Claude Code 专属适配指南。
-> 协议规格请参考 `docs/superpowers/specs/2026-03-22-ads-6layer-coordination-design.md`。
+> 协议规格请参考 `docs/00-overview.md`、`docs/01-principles.md` 与 `docs/03-tools-and-mcp.md`。
 
 ## 客户端能力概述
 
@@ -36,8 +36,13 @@ Claude Code 在 ADS 客户端中具备最强的自动化能力：
 
 ## 推荐 Hooks 配置
 
-参考 `docs/validation/ADS-Claude改进方案.md` 中的 hooks 配置模板。
-（该文档包含完整的 `.claude/settings.json` 配置示例）
+最小可用思路：
+
+- `SessionStart`：提醒先读 `README.md`、`.agent/constitution.md`、`.ai/START_HERE.md`
+- `PreToolUse`：在写文件前检查 task 中的 `locked_paths` / `forbidden_paths`
+- `PostToolUse`：在任务结束前提醒补 handoff 与 evidence
+
+如果团队需要更强的 Claude Code 工作流，可以在自己的私有研发仓库里维护更细的 hooks 模板，而不是把内部配置推演过程放进公开产品仓库。
 
 ## Auto Memory 与 ADS Memory 映射
 

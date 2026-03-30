@@ -2,7 +2,7 @@
 
 **Agent 开发规范（Agent Development Specification, ADS）** — 给人读的说明均在本目录。
 
-本索引只覆盖对外公开、面向使用者的主文档路径。`docs/superpowers/`、`docs/validation/` 更偏向内部设计、验证和迭代档案，不建议作为首次了解 ADS 的阅读入口。
+本索引只列出对外公开、面向使用者的主文档路径。内部设计、验证和迭代档案已经迁移到单独的私有仓库维护，不再作为公开仓库的一部分提供。
 
 | 序号 | 文档 | 说明 |
 |------|------|------|
@@ -28,9 +28,14 @@
 - [research/README.md](research/README.md)：ADS 外部生态研究目录与节奏
 - [research/2026-03-agent-harness-landscape.md](research/2026-03-agent-harness-landscape.md)：首份 ADS harness 生态观察与 roadmap 回写结论
 
-## 内部研发档案
+## 私有研发档案
 
-- `docs/superpowers/`：设计稿、实现计划、阶段性研发文档
-- `docs/validation/`：竞品扫描、用户模拟、验证记录与增强讨论
+ADS 的设计稿、实现计划、验证记录和内部推演，已经迁移到单独的私有仓库维护。
 
-如果未来你希望把公开仓库进一步产品化，最有效的做法不是“隐藏”这些目录，而是把它们迁出公开分支或迁到单独的私有仓库。
+公开仓库只保留：
+
+- 产品说明
+- 协议文档
+- 接入指南
+- 客户端适配
+- 示例与可发布脚本
