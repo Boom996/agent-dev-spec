@@ -32,6 +32,7 @@ COPY_MAP = {
     "scripts/ads_health_report.py": "scripts/ads_health_report.py",
     "scripts/ads_doctor.py": "scripts/ads_doctor.py",
     "scripts/ads_explain.py": "scripts/ads_explain.py",
+    "scripts/ads_init.py": "scripts/ads_init.py",
     "scripts/ads_resume.py": "scripts/ads_resume.py",
     "scripts/ads_handoff_draft.py": "scripts/ads_handoff_draft.py",
     "scripts/ads_evidence_capture.py": "scripts/ads_evidence_capture.py",

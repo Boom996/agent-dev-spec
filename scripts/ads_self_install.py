@@ -54,6 +54,7 @@ class SelfInstallSummary:
             "",
             "## Entry Files",
             "- `README.md`",
+            f"- `{ads_adopt.INSTALL_REPORT_REL}`",
             "- `.agent/identity.json`",
             "- `.ai/START_HERE.md`",
             "- `.agent/docs/guides/project-brief.md`",
@@ -281,9 +282,7 @@ def main() -> int:
         return 2
 
     print("[ads_self_install] 建议先确认当前主分支的最新提交已经上传；ADS 已在新分支内完成接入。")
-    print(ads_adopt.render_report_markdown(summary.report))
-    ads_init.print_summary(summary.init_result, summary.target_root)
-    print(ads_adopt.render_apply_summary(summary.report))
+    print(f"[ads_self_install] detailed report: {ads_adopt.INSTALL_REPORT_REL}")
     print(summary.render_summary())
     if summary.dashboard_started:
         print(f"[ads_self_install] dashboard started at {summary.dashboard_url}")

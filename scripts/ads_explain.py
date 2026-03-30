@@ -75,7 +75,7 @@ def load_docs_entry(repo_root: Path) -> dict[str, str]:
         return {}
     block = docs_entry_match.group(1)
     entries: dict[str, str] = {}
-    for key in ("readme", "ai_context", "project_brief", "start_here"):
+    for key in ("readme", "ai_context", "project_brief", "install_report", "start_here"):
         match = re.search(rf'"{key}"\s*:\s*"([^"]+)"', block)
         if match:
             entries[key] = match.group(1)
@@ -139,6 +139,8 @@ def build_explanation(repo_root: Path = REPO_ROOT) -> str:
     ]
     if docs_entry.get("project_brief"):
         lines.append(f"- {docs_entry['project_brief']}")
+    if docs_entry.get("install_report"):
+        lines.append(f"- {docs_entry['install_report']}")
     if docs_entry.get("ai_context"):
         lines.append(f"- {docs_entry['ai_context']}")
 

@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import json
+import subprocess
 import sys
 from pathlib import Path
 
@@ -70,6 +71,31 @@ class TestAdsInit:
         readme = (target_root / "README.md").read_text(encoding="utf-8")
         assert "ADS Agent Quick Start" in readme
         assert "Original content." in readme
+
+    def test_init_repo_copies_runtime_dependencies_for_bootstrapped_scripts(self, tmp_path):
+        target_root = tmp_path / "runtime-ready"
+
+        ads_init.init_repo(target_root, source_root=REPO_ROOT)
+
+        explain = subprocess.run(
+            ["python3", "scripts/ads_explain.py", "--repo-root", str(target_root)],
+            cwd=target_root,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+        doctor = subprocess.run(
+            ["python3", "scripts/ads_doctor.py", "--repo-root", str(target_root)],
+            cwd=target_root,
+            text=True,
+            capture_output=True,
+            check=False,
+        )
+
+        assert explain.returncode == 0, explain.stderr
+        assert "# ADS Project Brief" in explain.stdout
+        assert doctor.returncode == 0, doctor.stderr
+        assert "- status: pass" in doctor.stdout
 
     def test_init_repo_infers_node_verify_commands(self, tmp_path):
         target_root = tmp_path / "arcade"

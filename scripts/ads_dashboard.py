@@ -166,6 +166,7 @@ def build_guidance(
             ".ai/START_HERE.md" if (repo_root / ".ai" / "START_HERE.md").exists() else "",
             ".agent/constitution.md" if (repo_root / ".agent" / "constitution.md").exists() else "",
             str(docs_entry.get("project_brief", "")),
+            str(docs_entry.get("install_report", "")),
             str(docs_entry.get("ai_context", "")),
         ]
     )

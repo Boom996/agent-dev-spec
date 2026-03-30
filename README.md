@@ -17,7 +17,8 @@ ADS 是一套面向真实开发项目的 **Agent 工程协同规范与落地工�
 2. 如果你要把 ADS 接到另一个项目，优先在目标项目根目录执行 `python3 /path/to/agent-dev-spec/scripts/ads_self_install.py`。
 3. 接入前先提醒作者提交并优先上传当前本地修改，再创建新的 git 分支做接入。
 4. 接入后先读目标项目根 `README.md` 中的 `ADS Agent Quick Start`，再读 `.ai/START_HERE.md`、`.agent/constitution.md`、`.agent/docs/guides/project-brief.md`。
-5. 开始真实开发前，先跑 `python3 scripts/ads_explain.py`、`python3 scripts/ads_doctor.py`、`python3 scripts/validate_ads.py`，必要时再开 `python3 scripts/ads_dashboard.py`。
+5. 接入完成后优先回看 `.agent/docs/guides/ads-install-report.md`，确认这次接入的结果和下一步动作。
+6. 开始真实开发前，先跑 `python3 scripts/ads_explain.py`、`python3 scripts/ads_doctor.py`、`python3 scripts/validate_ads.py`，必要时再开 `python3 scripts/ads_dashboard.py`。
 
 ### Entry Docs
 

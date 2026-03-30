@@ -100,6 +100,7 @@ class TestAdsAdopt:
         assert (target_root / "README.md").exists()
         assert (target_root / ".agent" / "identity.json").exists()
         assert (target_root / ".agent" / "adoption-report.json").exists()
+        assert (target_root / ".agent" / "docs" / "guides" / "ads-install-report.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "project-brief.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "project-adoption-report.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "legacy-workspace-mapping.md").exists()
@@ -110,6 +111,7 @@ class TestAdsAdopt:
         assert identity["standard_verify_commands"]["test"] == "pnpm --dir agentgames test"
         assert identity["docs_entry"]["ai_context"] == "docs/superpowers/specs/2026-03-24-agent-maze-project-guide.md"
         assert identity["docs_entry"]["project_brief"] == ".agent/docs/guides/project-brief.md"
+        assert identity["docs_entry"]["install_report"] == ".agent/docs/guides/ads-install-report.md"
 
         readme = (target_root / "README.md").read_text(encoding="utf-8")
         assert "ADS Agent Quick Start" in readme
@@ -123,6 +125,12 @@ class TestAdsAdopt:
         assert "docs/superpowers/specs/2026-03-24-agent-maze-project-guide.md" in project_brief
         assert "python3 scripts/ads_doctor.py" in project_brief
 
+        install_report = (target_root / ".agent" / "docs" / "guides" / "ads-install-report.md").read_text(encoding="utf-8")
+        assert "# ADS Install Report" in install_report
+        assert "`README.md`" in install_report
+        assert "`app`" not in install_report
+        assert "`agentgames`" in install_report
+
         findings = ads_doctor.run_doctor(target_root)
         assert findings == []
 
@@ -130,6 +138,7 @@ class TestAdsAdopt:
         assert "## Trial Ready Summary" in summary
         assert "python3 scripts/ads_doctor.py" in summary
         assert "README.md" in summary
+        assert "ads-install-report.md" in summary
 
     def test_write_report_files_emits_markdown_and_json(self, tmp_path):
         target_root = build_brownfield_repo(tmp_path)

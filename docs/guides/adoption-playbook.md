@@ -62,6 +62,7 @@ python3 scripts/ads_adopt.py /path/to/your-project \
 完成后，宿主仓库会获得：
 
 - `README.md` 中的 `ADS Agent Quick Start` 区块
+- `.agent/docs/guides/ads-install-report.md`
 - `.agent/identity.json`
 - `.agent/docs/`
 - `.agent/adoption-report.json`
@@ -110,6 +111,8 @@ python3 scripts/ads_adopt.py /path/to/your-project \
 - 这个项目为什么接入 ADS
 - 当前应该先读什么
 - 下一步该执行什么命令
+
+而 `ads-install-report.md` 的作用是把“这次接入到底生成了什么、下一步先做什么”沉淀成一份可回看的结果报告，避免只依赖终端输出。
 
 此外，`--apply` 结束时还会额外输出一段试用结果摘要，直接告诉你：
 

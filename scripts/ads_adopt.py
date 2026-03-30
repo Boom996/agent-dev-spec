@@ -13,6 +13,7 @@ import ads_init
 
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
+INSTALL_REPORT_REL = ".agent/docs/guides/ads-install-report.md"
 EXCLUDED_DIRS = {
     ".git",
     "node_modules",
@@ -388,6 +389,7 @@ def build_report(target_root: Path, project_name: str | None = None) -> Adoption
             "readme": "README.md",
             "ai_context": primary_context,
             "project_brief": ".agent/docs/guides/project-brief.md",
+            "install_report": INSTALL_REPORT_REL,
             "start_here": ".ai/START_HERE.md",
         },
     )
@@ -644,7 +646,7 @@ def render_adoption_task(report: AdoptionReport) -> str:
         "",
         "## 验收标准（可勾选）",
         "",
-        "- [ ] README_AGENT、identity、constitution、START_HERE 已按项目语义定制",
+        "- [ ] README、identity、constitution、START_HERE 已按项目语义定制",
         "- [ ] 旧工作区映射文档已建立",
         "- [ ] 宿主项目标准验证命令已写入 identity",
         "",
@@ -687,6 +689,7 @@ def render_apply_summary(report: AdoptionReport) -> str:
         "## What You Have Now",
         "- `README.md` 已写入 ADS Quick Start 区块，可作为仓库级 Agent 入口。",
         "- `.agent/docs/guides/project-brief.md` 与 `.agent/docs/guides/project-adoption-report.md` 已生成。",
+        f"- `{INSTALL_REPORT_REL}` 已生成，可作为这次接入的结果回看报告。",
         "- `.ai/START_HERE.md` 与 adoption backlog task 已生成。",
         "",
         "## Run These Next",
@@ -702,11 +705,53 @@ def render_apply_summary(report: AdoptionReport) -> str:
             "",
             "## Entry Files",
             "- `README.md`",
+            f"- `{INSTALL_REPORT_REL}`",
             "- `.agent/docs/guides/project-brief.md`",
             "- `.agent/docs/guides/project-adoption-report.md`",
             "- `.ai/tasks/backlog/`",
         ]
     )
+    return "\n".join(lines) + "\n"
+
+
+def render_install_report(report: AdoptionReport) -> str:
+    lines = [
+        "# ADS Install Report",
+        "",
+        f"- project_name: `{report.project_name}`",
+        f"- workspace_root: `{report.workspace_root}`",
+        f"- primary_code_root: `{report.primary_code_root}`",
+        f"- adoption_fit: `{report.adoption_fit}`",
+        f"- recommended_mode: `{report.recommended_mode}`",
+        "",
+        "## What Changed",
+        "- `README.md` 已写入 `ADS Agent Quick Start` 区块。",
+        "- `.agent/identity.json`、`.agent/constitution.md`、`.ai/START_HERE.md` 已按项目语义生成。",
+        "- `.agent/docs/guides/project-brief.md`、`.agent/docs/guides/project-adoption-report.md`、`.agent/docs/guides/legacy-workspace-mapping.md` 已生成。",
+        "- `.ai/tasks/backlog/TASK-00000000-001-ads-adoption.md` 已生成，可作为第一个真实接入任务。",
+        "",
+        "## Entry Files",
+        "- `README.md`",
+        f"- `{report.docs_entry.get('project_brief', '.agent/docs/guides/project-brief.md')}`",
+        f"- `{report.docs_entry.get('ai_context', '.agent/docs/guides/project-adoption-report.md')}`",
+        "- `.ai/START_HERE.md`",
+        "",
+        "## Verify Commands",
+    ]
+    for name, command in report.verify_commands.items():
+        lines.append(f"- `{name}`: `{command}`")
+    lines.extend(
+        [
+            "",
+            "## Run These Next",
+            f"- `python3 scripts/ads_doctor.py --repo-root {report.workspace_root}`",
+            "- `python3 scripts/validate_ads.py`",
+            f"- `python3 scripts/ads_dashboard.py --repo-root {report.workspace_root}`",
+            "",
+            "## Trial Success Checks",
+        ]
+    )
+    lines.extend(f"- {item}" for item in report.trial_success_checks)
     return "\n".join(lines) + "\n"
 
 
@@ -719,6 +764,7 @@ def apply_adoption(target_root: Path, force: bool = False, project_name: str | N
         target_root / ".ai" / "START_HERE.md",
         target_root / ".agent" / "docs" / "guides" / "project-adoption-report.md",
         target_root / ".agent" / "docs" / "guides" / "legacy-workspace-mapping.md",
+        target_root / INSTALL_REPORT_REL,
         target_root / ".ai" / "tasks" / "backlog" / "TASK-00000000-001-ads-adoption.md",
     }
     existed_map = {path: path.exists() for path in existing_before}
@@ -756,6 +802,10 @@ def apply_adoption(target_root: Path, force: bool = False, project_name: str | N
     write_generated(
         target_root / ".agent" / "docs" / "guides" / "legacy-workspace-mapping.md",
         render_legacy_mapping(report),
+    )
+    write_generated(
+        target_root / INSTALL_REPORT_REL,
+        render_install_report(report),
     )
     write_generated(
         target_root / ".ai" / "tasks" / "backlog" / "TASK-00000000-001-ads-adoption.md",

@@ -102,6 +102,7 @@ class TestAdsSelfInstall:
         assert (target_root / "README.md").exists()
         assert (target_root / ".agent" / "identity.json").exists()
         assert (target_root / ".ai" / "START_HERE.md").exists()
+        assert (target_root / ".agent" / "docs" / "guides" / "ads-install-report.md").exists()
 
     def test_perform_self_install_runs_validation_and_returns_dashboard_url(self, tmp_path):
         target_root = build_git_repo(tmp_path)
@@ -118,3 +119,4 @@ class TestAdsSelfInstall:
         assert summary.doctor_findings == []
         assert summary.dashboard_url == "http://127.0.0.1:8876"
         assert "README.md" in summary.render_summary()
+        assert "ads-install-report.md" in summary.render_summary()
