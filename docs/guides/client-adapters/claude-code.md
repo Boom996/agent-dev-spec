@@ -42,7 +42,7 @@ Claude Code 在 ADS 客户端中具备最强的自动化能力：
 - `PreToolUse`：在写文件前检查 task 中的 `locked_paths` / `forbidden_paths`
 - `PostToolUse`：在任务结束前提醒补 handoff 与 evidence
 
-如果团队需要更强的 Claude Code 工作流，可以在自己的私有研发仓库里维护更细的 hooks 模板，而不是把内部配置推演过程放进公开产品仓库。
+如果团队需要更强的 Claude Code 工作流，可以在自己的工程体系中维护更细的 hooks 模板。
 
 ## Auto Memory 与 ADS Memory 映射
 
