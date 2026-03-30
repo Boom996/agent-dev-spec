@@ -74,12 +74,15 @@ python3 /path/to/agent-dev-spec/scripts/ads_self_install.py
 - 检查当前项目 git 工作区
 - 发现未提交修改时先停下并提醒作者优先提交/上传
 - 自动创建新的 ADS 接入分支
+- 对已有成熟项目默认采用 `lean` 接入档位，只注入高频协作控制面
 - 完成 adopt -> apply -> doctor -> validate
 - 接入成功后启动并打开 ADS dashboard
 
 1. 如果是新项目或干净仓库，执行 `python3 scripts/ads_init.py /path/to/your-project`。
 2. 如果是已有协作资产的存量项目，先执行 `python3 scripts/ads_adopt.py /path/to/your-project` 获取试用判断报告；如需保留接入报告，可追加 `--report-file` / `--json-file`；确认后再用 `--apply` 自动写入 ADS 骨架。
    完成后会自动生成项目级首读摘要：`.agent/docs/guides/project-brief.md`
+   默认 `--adoption-profile auto` 会对成熟项目选择 `lean`，只保留 `README.md`、`project-brief`、`ads-install-report`、`legacy-workspace-mapping`、`.ai/START_HERE.md` 这类高频文件，把 ADS 低频参考手册留在 ADS 源仓库。
+   如果你明确希望在宿主仓库保留完整 ADS 参考文档镜像，再改用 `--adoption-profile full`。
 3. 让所有参与协作的人先阅读宿主仓库根部的 `README.md`，确认其中的 `ADS Agent Quick Start` 区块。
 4. 修改宿主仓库的 `.agent/identity.json`、`.agent/constitution.md`、`.ai/START_HERE.md`。
 5. 用一个真实任务跑通 task -> evidence -> handoff -> QA。
@@ -89,6 +92,19 @@ python3 /path/to/agent-dev-spec/scripts/ads_self_install.py
 9. 按需接入 [`docs/guides/client-adapters/README.md`](docs/guides/client-adapters/README.md) 中的客户端适配说明。
 
 更细的落地路径见 [`docs/guides/adoption-playbook.md`](docs/guides/adoption-playbook.md)。
+
+## Lean Adoption
+
+针对已有产品文档、计划流程和 handoff 体系都比较成熟的项目，ADS 现在默认优先以“最小协作控制面”接入，而不是再向宿主仓库注入整套 ADS 手册。
+
+- `auto`：默认模式。成熟仓库优先走 `lean`，greenfield / protocol-first 仓库走 `full`
+- `lean`：只把高频日常协作入口放进宿主仓库，低频 ADS 参考文档仍留在 ADS 源仓库
+- `full`：把完整 `.agent/docs/` ADS 参考文档镜像也复制到宿主仓库
+
+这解决的是存量项目接入时最常见的两个问题：
+
+- Agent 容易把整个 `.agent/docs/` 误当成“都得先读”的上下文，导致接入后日常实现链路变重
+- 宿主项目原本已经成熟的产品文档和 handoff 材料，会被 ADS 自己的解释性文档稀释
 
 ## 这套仓库包含什么
 

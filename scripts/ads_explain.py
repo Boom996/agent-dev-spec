@@ -100,12 +100,44 @@ def load_current_stage(repo_root: Path) -> str:
     return stage or "unknown"
 
 
+def build_doc_priority(repo_root: Path, docs_entry: dict[str, str]) -> tuple[list[str], list[str]]:
+    daily_use = [
+        "README.md",
+        docs_entry.get("install_report", ""),
+        docs_entry.get("project_brief", ""),
+        docs_entry.get("ai_context", ""),
+        ".ai/START_HERE.md" if (repo_root / ".ai" / "START_HERE.md").exists() else "",
+        ".agent/constitution.md" if (repo_root / ".agent" / "constitution.md").exists() else "",
+    ]
+    dedup_daily: list[str] = []
+    seen: set[str] = set()
+    for item in daily_use:
+        value = item.strip()
+        if value and value not in seen:
+            seen.add(value)
+            dedup_daily.append(value)
+
+    reference_candidates = [
+        ".agent/docs/00-overview.md",
+        ".agent/docs/01-principles.md",
+        ".agent/docs/03-tools-and-mcp.md",
+        ".agent/docs/guides/adoption-playbook.md",
+        ".agent/docs/guides/client-adapters/README.md",
+        ".agent/docs/research/README.md",
+    ]
+    reference_docs = [item for item in reference_candidates if (repo_root / item).exists()]
+    if not reference_docs:
+        reference_docs = ["ADS reference docs stay in the ADS source repo by default; the host repo keeps only the operational collaboration layer."]
+    return dedup_daily, reference_docs
+
+
 def build_explanation(repo_root: Path = REPO_ROOT) -> str:
     workspace_status = infer_workspace_status(repo_root)
     project_name = load_project_name(repo_root)
     docs_entry = load_docs_entry(repo_root)
     mission = load_mission(repo_root)
     current_stage = load_current_stage(repo_root)
+    daily_use_docs, reference_docs = build_doc_priority(repo_root, docs_entry)
     active_tasks = discover(repo_root, ".ai/tasks/active/*.md")
     handoffs = discover(repo_root, ".ai/handoffs/*.md")
     escalations = discover(repo_root, ".ai/escalations/*.md")
@@ -148,6 +180,12 @@ def build_explanation(repo_root: Path = REPO_ROOT) -> str:
         lines.append(f"- {active_tasks[0].relative_to(repo_root).as_posix()}")
     if handoffs:
         lines.append(f"- {handoffs[0].relative_to(repo_root).as_posix()}")
+
+    lines.extend(["", "## High-Frequency / Daily Use"])
+    lines.extend(f"- {item}" for item in daily_use_docs)
+
+    lines.extend(["", "## Low-Frequency / Reference"])
+    lines.extend(f"- {item}" for item in reference_docs)
 
     lines.extend(["", "## Next Commands"])
     if workspace_status == "needs_bootstrap":

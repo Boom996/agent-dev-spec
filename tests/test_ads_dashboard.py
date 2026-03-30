@@ -11,6 +11,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
+import ads_adopt
 import ads_dashboard
 import ads_init
 
@@ -316,3 +317,28 @@ class TestAdsDashboard:
         assert "接入后第一步" in html
         assert "先读 README.md 和 ADS install report" in html
         assert ".agent/docs/guides/ads-install-report.md" in html
+
+    def test_dashboard_highlights_daily_and_reference_docs_for_lean_adoption(self, tmp_path):
+        target_root = tmp_path / "mature-project"
+        target_root.mkdir()
+        (target_root / ".git").mkdir()
+        write_file(
+            target_root,
+            "docs/product/project-guide.md",
+            "# Project Guide\n\n> 一个成熟项目\n",
+        )
+        write_file(
+            target_root,
+            "app/package.json",
+            '{"name":"mature-project","private":true,"scripts":{"test":"vitest run"}}\n',
+        )
+
+        ads_adopt.apply_adoption(target_root, force=False)
+
+        snapshot = ads_dashboard.build_snapshot(target_root)
+        html = ads_dashboard.render_overview_page(snapshot)
+
+        assert "高频 / 日常使用" in html
+        assert ".agent/docs/guides/project-brief.md" in html
+        assert "低频 / 参考" in html
+        assert "ADS source repo" in html

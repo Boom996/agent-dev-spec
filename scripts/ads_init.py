@@ -12,6 +12,7 @@ from pathlib import Path
 REPO_ROOT = Path(__file__).resolve().parent.parent
 ADS_README_START = "<!-- ADS:START -->"
 ADS_README_END = "<!-- ADS:END -->"
+DEFAULT_INSTALL_REPORT = ".agent/docs/guides/ads-install-report.md"
 
 COPY_MAP = {
     ".ai/README.md": ".ai/README.md",
@@ -41,7 +42,7 @@ COPY_MAP = {
     "scripts/sync-tools.py": "scripts/sync-tools.py",
 }
 
-DOC_FILES = [
+DOC_FILES_FULL = [
     "README.md",
     "00-overview.md",
     "01-principles.md",
@@ -61,6 +62,8 @@ DOC_FILES = [
     "research/README.md",
     "research/2026-03-agent-harness-landscape.md",
 ]
+
+DOC_FILES_LEAN: list[str] = []
 
 GENERATED_DIRS = [
     ".ai/tasks",
@@ -107,10 +110,29 @@ def infer_verify_commands(target_root: Path) -> dict[str, str]:
     }
 
 
-def build_identity(source_root: Path, target_root: Path, project_name: str | None) -> str:
+def normalize_docs_profile(docs_profile: str) -> str:
+    value = docs_profile.strip().lower()
+    if value not in {"full", "lean"}:
+        raise ValueError(f"Unsupported docs profile: {docs_profile}")
+    return value
+
+
+def docs_reference_paths(docs_profile: str) -> list[str]:
+    profile = normalize_docs_profile(docs_profile)
+    if profile == "lean":
+        return []
+    return [
+        ".agent/docs/guides/adoption-playbook.md",
+        ".agent/docs/00-overview.md",
+        ".agent/docs/guides/client-adapters/codex-cli.md",
+    ]
+
+
+def build_identity(source_root: Path, target_root: Path, project_name: str | None, docs_profile: str = "full") -> str:
     template_path = source_root / ".agent" / "identity.json.example"
     data = json.loads(read_text(template_path))
     data["project_name"] = project_name or target_root.name
+    data["adoption_profile"] = normalize_docs_profile(docs_profile)
     data["standard_verify_commands"] = infer_verify_commands(target_root)
     return json.dumps(data, ensure_ascii=False, indent=2) + "\n"
 
@@ -229,24 +251,35 @@ def render_start_here(source_root: Path) -> str:
     return text
 
 
-def render_install_report(project_name: str, primary_code_root: str = ".") -> str:
+def render_install_report(project_name: str, primary_code_root: str = ".", docs_profile: str = "full") -> str:
+    profile = normalize_docs_profile(docs_profile)
     lines = [
         "# ADS Install Report",
         "",
         f"- project_name: `{project_name}`",
         f"- primary_code_root: `{primary_code_root}`",
+        f"- adoption_profile: `{profile}`",
         "",
         "## What Changed",
         "- `README.md` 已写入 `ADS Agent Quick Start` 区块。",
         "- `.agent/identity.json`、`.agent/constitution.md`、`.ai/START_HERE.md` 已生成。",
-        "- ADS 基础脚本、模板、工具注册和文档镜像已复制到当前仓库。",
+        "- ADS 基础脚本、模板、工具注册已复制到当前仓库。",
         "",
-        "## Entry Files",
+        "## High-Frequency / Daily Use",
         "- `README.md`",
-        "- `.agent/docs/guides/ads-install-report.md`",
+        f"- `{DEFAULT_INSTALL_REPORT}`",
         "- `.ai/START_HERE.md`",
         "- `.agent/constitution.md`",
         "",
+        "## Low-Frequency / Reference",
+    ]
+    if profile == "full":
+        lines.extend(f"- `{path}`" for path in docs_reference_paths(profile))
+    else:
+        lines.append("- ADS reference docs stay in the ADS source repo by default; use full profile if you need a local mirror.")
+    lines.extend(
+        [
+            "",
         "## Run These Next",
         "- `python3 scripts/ads_explain.py`",
         "- `python3 scripts/ads_doctor.py`",
@@ -255,7 +288,8 @@ def render_install_report(project_name: str, primary_code_root: str = ".") -> st
         "",
         "## First Step",
         "- 先读 `README.md` 和本报告，再从 `.ai/tasks/backlog/` 选择第一个真实任务。",
-    ]
+        ]
+    )
     return "\n".join(lines) + "\n"
 
 
@@ -272,9 +306,18 @@ def render_root_readme_block(
     vision_one_liner: str | None = None,
     primary_code_root: str | None = None,
     project_brief: str = ".agent/docs/guides/project-brief.md",
+    install_report: str = DEFAULT_INSTALL_REPORT,
     ai_context: str = ".agent/docs/guides/project-adoption-report.md",
     include_legacy_mapping: bool = False,
+    docs_profile: str = "full",
 ) -> str:
+    profile = normalize_docs_profile(docs_profile)
+    reference_docs = docs_reference_paths(profile)
+    reference_lines = (
+        [f"- `{path}`" for path in reference_docs]
+        if reference_docs
+        else ["- ADS reference docs stay in the ADS source repo by default; use full profile if you need a local mirror."]
+    )
     lines = [
         ADS_README_START,
         "## ADS Agent Quick Start",
@@ -288,10 +331,11 @@ def render_root_readme_block(
             "如果你是刚进入本仓库的人类开发者或 Agent，请先按这个顺序行动：",
             "",
             "1. 先读当前根 `README.md`，确认项目目标和 ADS 入口。",
-            f"2. 再读 `{project_brief}`。",
-            f"3. 再读 `{ai_context}`。",
-            "4. 再读 `.ai/START_HERE.md` 与 `.agent/constitution.md`。",
-            "5. 进入真实 task 前，先确认 `.agent/identity.json` 里的 verify commands。",
+            f"2. 再读 `{install_report}`。",
+            f"3. 再读 `{project_brief}`。",
+            f"4. 再读 `{ai_context}`。",
+            "5. 再读 `.ai/START_HERE.md` 与 `.agent/constitution.md`。",
+            "6. 进入真实 task 前，先确认 `.agent/identity.json` 里的 verify commands。",
             "",
             "### Workspace",
             "",
@@ -318,15 +362,20 @@ def render_root_readme_block(
             "- `python3 scripts/validate_ads.py`",
             "- `python3 scripts/ads_dashboard.py`",
             "",
-            "### Adoption Docs",
+            "### High-Frequency / Daily Use",
             "",
-            "- `.agent/docs/guides/adoption-playbook.md`",
-            "- `.agent/docs/00-overview.md`",
-            "- `.agent/docs/guides/client-adapters/codex-cli.md`",
-            ADS_README_END,
+            f"- `{install_report}`",
+            f"- `{project_brief}`",
+            f"- `{ai_context}`",
+            "- `.ai/START_HERE.md`",
+            "- `.agent/constitution.md`",
+            "",
+            "### Low-Frequency / Reference",
             "",
         ]
     )
+    lines.extend(reference_lines)
+    lines.extend(["", ADS_README_END, ""])
     return "\n".join(lines)
 
 
@@ -355,8 +404,10 @@ def write_root_readme(
     vision_one_liner: str | None = None,
     primary_code_root: str | None = None,
     project_brief: str = ".agent/docs/guides/project-brief.md",
+    install_report: str = DEFAULT_INSTALL_REPORT,
     ai_context: str = ".agent/docs/guides/project-adoption-report.md",
     include_legacy_mapping: bool = False,
+    docs_profile: str = "full",
 ) -> None:
     path = target_root / "README.md"
     ads_block = render_root_readme_block(
@@ -364,8 +415,10 @@ def write_root_readme(
         vision_one_liner=vision_one_liner,
         primary_code_root=primary_code_root,
         project_brief=project_brief,
+        install_report=install_report,
         ai_context=ai_context,
         include_legacy_mapping=include_legacy_mapping,
+        docs_profile=docs_profile,
     )
     if path.exists():
         existing = read_text(path)
@@ -401,20 +454,32 @@ def ensure_dir(path: Path, result: InitResult) -> None:
         result.created.append(path)
 
 
-def init_repo(target_root: Path, source_root: Path = REPO_ROOT, force: bool = False, project_name: str | None = None) -> InitResult:
+def init_repo(
+    target_root: Path,
+    source_root: Path = REPO_ROOT,
+    force: bool = False,
+    project_name: str | None = None,
+    docs_profile: str = "full",
+) -> InitResult:
     result = InitResult()
     target_root.mkdir(parents=True, exist_ok=True)
     resolved_project_name = project_name or target_root.name
+    resolved_docs_profile = normalize_docs_profile(docs_profile)
 
     for directory in GENERATED_DIRS:
         ensure_dir(target_root / directory, result)
 
-    maybe_write(target_root / ".agent" / "identity.json", build_identity(source_root, target_root, resolved_project_name), force, result)
+    maybe_write(
+        target_root / ".agent" / "identity.json",
+        build_identity(source_root, target_root, resolved_project_name, resolved_docs_profile),
+        force,
+        result,
+    )
     maybe_write(target_root / ".ai" / "START_HERE.md", render_start_here(source_root), force, result)
     maybe_write(target_root / "tools" / "toolset.json", build_toolset(), force, result)
     maybe_write(
-        target_root / ".agent" / "docs" / "guides" / "ads-install-report.md",
-        render_install_report(resolved_project_name),
+        target_root / DEFAULT_INSTALL_REPORT,
+        render_install_report(resolved_project_name, docs_profile=resolved_docs_profile),
         force,
         result,
     )
@@ -423,8 +488,10 @@ def init_repo(target_root: Path, source_root: Path = REPO_ROOT, force: bool = Fa
         result,
         force=force,
         project_name=resolved_project_name,
-        project_brief=".agent/docs/guides/adoption-playbook.md",
-        ai_context=".agent/docs/00-overview.md",
+        project_brief=DEFAULT_INSTALL_REPORT if resolved_docs_profile == "lean" else ".agent/docs/guides/adoption-playbook.md",
+        install_report=DEFAULT_INSTALL_REPORT,
+        ai_context="README.md" if resolved_docs_profile == "lean" else ".agent/docs/00-overview.md",
+        docs_profile=resolved_docs_profile,
     )
 
     for source_rel, target_rel in COPY_MAP.items():
@@ -436,7 +503,8 @@ def init_repo(target_root: Path, source_root: Path = REPO_ROOT, force: bool = Fa
         target_path = target_root / "templates" / template_path.name
         maybe_write(target_path, read_text(template_path), force, result)
 
-    for doc_rel in DOC_FILES:
+    doc_files = DOC_FILES_FULL if resolved_docs_profile == "full" else DOC_FILES_LEAN
+    for doc_rel in doc_files:
         source_path = source_root / "docs" / doc_rel
         target_path = target_root / ".agent" / "docs" / doc_rel
         maybe_write(target_path, read_text(source_path), force, result)
@@ -466,10 +534,11 @@ def main() -> int:
     parser.add_argument("target", help="Target repository root to scaffold")
     parser.add_argument("--force", action="store_true", help="Overwrite existing ADS files")
     parser.add_argument("--project-name", help="Project name written into .agent/identity.json")
+    parser.add_argument("--docs-profile", choices=("full", "lean"), default="full", help="Copy full ADS reference docs or only the lean collaboration layer")
     args = parser.parse_args()
 
     target_root = Path(args.target).resolve()
-    result = init_repo(target_root, force=args.force, project_name=args.project_name)
+    result = init_repo(target_root, force=args.force, project_name=args.project_name, docs_profile=args.docs_profile)
     print_summary(result, target_root)
     return 0
 

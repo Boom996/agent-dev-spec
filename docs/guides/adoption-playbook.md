@@ -31,6 +31,7 @@ python3 /path/to/agent-dev-spec/scripts/ads_self_install.py
 - 检查是否存在未提交修改
 - 提醒作者优先提交/上传当前工作
 - 自动创建新的 ADS 接入分支
+- 对已有成熟项目默认采用 `lean` 档位，只注入高频协作层
 - 完成 apply、doctor、validate
 - 成功后启动并打开 ADS dashboard
 
@@ -59,23 +60,34 @@ python3 scripts/ads_adopt.py /path/to/your-project \
   --json-file /tmp/ads-adoption-report.json
 ```
 
-完成后，宿主仓库会获得：
+完成后，宿主仓库至少会获得：
 
 - `README.md` 中的 `ADS Agent Quick Start` 区块
 - `.agent/docs/guides/ads-install-report.md`
 - `.agent/identity.json`
-- `.agent/docs/`
 - `.agent/adoption-report.json`
 - `.ai/START_HERE.md`
 - `tools/toolset.json`
 - `scripts/ads_doctor.py`、`scripts/ads_resume.py`、`scripts/ads_handoff_draft.py` 等基础脚本
 
+如果当前采用的是 `lean`，宿主仓库不会默认复制完整 `.agent/docs/` 参考手册镜像；低频 ADS 参考文档仍保留在 ADS 源仓库，避免把宿主项目的实现上下文稀释掉。
+
 `ads_adopt.py` 现在会优先告诉你：
 
 - 这个项目是否适合先试 ADS
 - 推荐采用什么接入方式
+- 推荐采用 `auto / lean / full` 中哪一种文档档位
 - 最小试用路径是什么
 - apply 完成后先跑哪几个命令
+
+三个档位的含义是：
+
+- `auto`
+  默认模式。已有产品文档、计划流程、handoff 或工作区约定的成熟项目，优先走 `lean`；协议优先或 greenfield 项目走 `full`
+- `lean`
+  只把宿主项目日常真正高频的 ADS 协作入口写入仓库，例如 `README.md`、`ads-install-report`、`project-brief`、`legacy-workspace-mapping`、`.ai/START_HERE.md`
+- `full`
+  把完整 `.agent/docs/` ADS 参考文档镜像也复制到宿主仓库，适合需要把 ADS 手册本地化到项目内的团队
 
 如果你已经明确要在**当前仓库**里执行安全试接入，则优先改用 `ads_self_install.py`，因为它会默认处理分支与 dirty worktree 安全边界。
 

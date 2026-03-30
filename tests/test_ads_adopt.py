@@ -79,6 +79,7 @@ class TestAdsAdopt:
         assert report.context_docs[0] == "docs/superpowers/specs/2026-03-24-agent-maze-project-guide.md"
         assert report.vision_one_liner == "Web 端 2D、多 Agent 羁绊驱动的异步观察 RPG"
         assert report.adoption_fit == "recommended"
+        assert report.adoption_profile == "lean"
         assert report.recommended_mode == "report_then_apply"
         assert report.trial_path[0].startswith("先阅读")
         assert "python3 scripts/ads_adopt.py" in report.apply_next_commands[0]
@@ -102,13 +103,17 @@ class TestAdsAdopt:
         assert (target_root / ".agent" / "adoption-report.json").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "ads-install-report.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "project-brief.md").exists()
-        assert (target_root / ".agent" / "docs" / "guides" / "project-adoption-report.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "legacy-workspace-mapping.md").exists()
         assert (target_root / ".ai" / "tasks" / "backlog" / "TASK-00000000-001-ads-adoption.md").exists()
+        assert not (target_root / ".agent" / "docs" / "00-overview.md").exists()
+        assert not (target_root / ".agent" / "docs" / "guides" / "adoption-playbook.md").exists()
+        assert not (target_root / ".agent" / "docs" / "guides" / "project-adoption-report.md").exists()
+        assert not (target_root / ".agent" / "docs" / "research" / "README.md").exists()
 
         identity = json.loads((target_root / ".agent" / "identity.json").read_text(encoding="utf-8"))
         assert identity["vision_one_liner"] == "Web 端 2D、多 Agent 羁绊驱动的异步观察 RPG"
         assert identity["standard_verify_commands"]["test"] == "pnpm --dir agentgames test"
+        assert identity["adoption_profile"] == "lean"
         assert identity["docs_entry"]["ai_context"] == "docs/superpowers/specs/2026-03-24-agent-maze-project-guide.md"
         assert identity["docs_entry"]["project_brief"] == ".agent/docs/guides/project-brief.md"
         assert identity["docs_entry"]["install_report"] == ".agent/docs/guides/ads-install-report.md"
@@ -139,6 +144,17 @@ class TestAdsAdopt:
         assert "python3 scripts/ads_doctor.py" in summary
         assert "README.md" in summary
         assert "ads-install-report.md" in summary
+        assert "lean" in summary
+
+    def test_apply_adoption_full_profile_keeps_reference_docs(self, tmp_path):
+        target_root = build_brownfield_repo(tmp_path)
+
+        report, _ = ads_adopt.apply_adoption(target_root, force=False, adoption_profile="full")
+
+        assert report.adoption_profile == "full"
+        assert (target_root / ".agent" / "docs" / "00-overview.md").exists()
+        assert (target_root / ".agent" / "docs" / "guides" / "adoption-playbook.md").exists()
+        assert (target_root / ".agent" / "docs" / "guides" / "project-adoption-report.md").exists()
 
     def test_write_report_files_emits_markdown_and_json(self, tmp_path):
         target_root = build_brownfield_repo(tmp_path)

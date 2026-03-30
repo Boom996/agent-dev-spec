@@ -11,6 +11,7 @@ REPO_ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 import ads_explain
+import ads_adopt
 import ads_init
 
 
@@ -154,3 +155,28 @@ class TestAdsExplain:
 
         assert "- workspace_status: needs_bootstrap" in text
         assert "Run ADS bootstrap before expecting structured collaboration." in text
+
+    def test_build_explanation_distinguishes_daily_and_reference_docs_for_lean_adoption(self, tmp_path):
+        target_root = tmp_path / "mature-project"
+        target_root.mkdir()
+        (target_root / ".git").mkdir()
+        write_file(
+            target_root,
+            "docs/product/project-guide.md",
+            "# Project Guide\n\n> 一个成熟项目\n",
+        )
+        write_file(
+            target_root,
+            "app/package.json",
+            '{"name":"mature-project","private":true,"scripts":{"test":"vitest run"}}\n',
+        )
+
+        ads_adopt.apply_adoption(target_root, force=False)
+
+        text = ads_explain.build_explanation(target_root)
+
+        assert "## High-Frequency / Daily Use" in text
+        assert ".agent/docs/guides/project-brief.md" in text
+        assert ".agent/docs/guides/ads-install-report.md" in text
+        assert "## Low-Frequency / Reference" in text
+        assert "ADS reference docs stay in the ADS source repo" in text

@@ -58,6 +58,7 @@ python3 /path/to/agent-dev-spec/scripts/ads_self_install.py
 - 把当前 git 仓库当成接入目标
 - dirty worktree 时先停下
 - 自动创建新的 ADS 接入分支
+- 对已有成熟项目默认走 `lean` 接入档位
 - 接入成功后打开 ADS dashboard
 
 ## 推荐命令工作流
@@ -81,6 +82,8 @@ python3 scripts/ads_adopt.py /path/to/target-repo
 ```bash
 python3 scripts/ads_adopt.py /path/to/target-repo --apply
 ```
+
+默认 `--adoption-profile auto` 会优先让成熟项目走 `lean`，只把高频协作入口注入宿主仓库；如果你明确需要把 ADS 完整参考手册镜像也复制进去，再指定 `--adoption-profile full`。
 
 ### 2. 恢复任务上下文
 

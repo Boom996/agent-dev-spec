@@ -53,6 +53,7 @@ class AdoptionReport:
     risks: list[str] = field(default_factory=list)
     recommended_actions: list[str] = field(default_factory=list)
     adoption_fit: str = "recommended"
+    adoption_profile: str = "lean"
     adoption_summary: str = ""
     recommended_mode: str = "report_then_apply"
     trial_path: list[str] = field(default_factory=list)
@@ -308,6 +309,26 @@ def infer_adoption_fit(primary: CodeRoot, nested_git_roots: list[Path], context_
     return "recommended"
 
 
+def normalize_adoption_profile(adoption_profile: str) -> str:
+    value = adoption_profile.strip().lower()
+    if value not in {"auto", "lean", "full"}:
+        raise ValueError(f"Unsupported adoption profile: {adoption_profile}")
+    return value
+
+
+def infer_adoption_profile(
+    *,
+    requested: str,
+    context_docs: list[Path],
+    legacy_handoffs: list[Path],
+    existing_systems: list[str],
+) -> str:
+    value = normalize_adoption_profile(requested)
+    if value != "auto":
+        return value
+    return "lean" if (context_docs or legacy_handoffs or existing_systems) else "full"
+
+
 def build_trial_path(primary: CodeRoot, primary_context: str) -> list[str]:
     return [
         f"先阅读 `{primary_context}`，确认项目目标、现有上下文和迁移边界。",
@@ -316,26 +337,36 @@ def build_trial_path(primary: CodeRoot, primary_context: str) -> list[str]:
     ]
 
 
-def build_trial_success_checks(primary: CodeRoot) -> list[str]:
-    return [
+def build_trial_success_checks(primary: CodeRoot, adoption_profile: str) -> list[str]:
+    checks = [
         "README.md、.agent/identity.json、.ai/START_HERE.md 已生成并指向真实项目语义。",
         "可以运行 doctor / validate，且不出现结构性错误。",
         f"围绕 `{primary.path}` 已经能创建并推进第一个真实 ADS task。",
     ]
+    if adoption_profile == "lean":
+        checks.append("宿主仓库只保留高频 ADS 协作文档；低频 ADS 参考手册默认不落地。")
+    return checks
 
 
-def build_report(target_root: Path, project_name: str | None = None) -> AdoptionReport:
+def build_report(target_root: Path, project_name: str | None = None, adoption_profile: str = "auto") -> AdoptionReport:
     nested_git_roots = detect_nested_git_roots(target_root)
     code_roots = detect_code_roots(target_root, nested_git_roots)
     primary = code_roots[0] if code_roots else CodeRoot(".", 0, [], {"test": "TODO: add your standard verify command"})
     context_docs = collect_context_docs(target_root)
     legacy_handoffs = collect_handoff_docs(target_root)
     vision = infer_vision_one_liner(target_root, context_docs)
+    existing_systems = detect_existing_systems(target_root)
+    resolved_profile = infer_adoption_profile(
+        requested=adoption_profile,
+        context_docs=context_docs,
+        legacy_handoffs=legacy_handoffs,
+        existing_systems=existing_systems,
+    )
 
     risks: list[str] = []
     if nested_git_roots:
         risks.append("Detected nested git repositories. Define whether ADS governs the outer workspace, the inner code repo, or both before changing repository boundaries.")
-    if any(system == "golutra_workspace" for system in detect_existing_systems(target_root)):
+    if any(system == "golutra_workspace" for system in existing_systems):
         risks.append("Existing Golutra workflow assets are present. ADS should map and preserve them instead of overwriting them.")
     if any("docs/superpowers" in doc for doc in [relative_to(target_root, path) for path in context_docs]):
         risks.append("Legacy spec and handoff documents already exist under docs/superpowers. They should be treated as migration inputs, not discarded.")
@@ -345,6 +376,10 @@ def build_report(target_root: Path, project_name: str | None = None) -> Adoption
         f"Treat `{primary.path}` as the primary code root for verification and implementation work.",
         "Generate ADS identity, constitution, start-here, and migration guide files before normalizing existing handoff/task assets.",
     ]
+    if resolved_profile == "lean":
+        recommended_actions.append("Use lean adoption to keep only the high-frequency ADS collaboration layer inside the host repo.")
+    else:
+        recommended_actions.append("Use full adoption if the host repo also needs a local ADS reference/manual mirror.")
 
     primary_context = relative_to(target_root, context_docs[0]) if context_docs else ".agent/docs/guides/project-adoption-report.md"
     adoption_fit = infer_adoption_fit(primary, nested_git_roots, context_docs)
@@ -357,9 +392,9 @@ def build_report(target_root: Path, project_name: str | None = None) -> Adoption
     )
     recommended_mode = "report_then_apply" if adoption_fit != "exploratory" else "analyze_only_first"
     trial_path = build_trial_path(primary, primary_context)
-    trial_success_checks = build_trial_success_checks(primary)
+    trial_success_checks = build_trial_success_checks(primary, resolved_profile)
     apply_next_commands = [
-        f"python3 scripts/ads_adopt.py {target_root} --apply --project-name {project_name or target_root.name}",
+        f"python3 scripts/ads_adopt.py {target_root} --apply --project-name {project_name or target_root.name} --adoption-profile {resolved_profile}",
         f"python3 scripts/ads_doctor.py --repo-root {target_root}",
         f"python3 scripts/validate_ads.py",
         f"python3 scripts/ads_dashboard.py --repo-root {target_root}",
@@ -372,7 +407,7 @@ def build_report(target_root: Path, project_name: str | None = None) -> Adoption
         primary_code_root=primary.path,
         additional_code_roots=[item.path for item in code_roots[1:4]],
         verify_commands=primary.verify_commands,
-        existing_systems=detect_existing_systems(target_root),
+        existing_systems=existing_systems,
         context_docs=[relative_to(target_root, path) for path in context_docs[:8]],
         legacy_handoffs=[relative_to(target_root, path) for path in legacy_handoffs[:5]],
         nested_git_roots=[relative_to(target_root, path) for path in nested_git_roots],
@@ -380,6 +415,7 @@ def build_report(target_root: Path, project_name: str | None = None) -> Adoption
         risks=risks,
         recommended_actions=recommended_actions,
         adoption_fit=adoption_fit,
+        adoption_profile=resolved_profile,
         adoption_summary=adoption_summary,
         recommended_mode=recommended_mode,
         trial_path=trial_path,
@@ -401,6 +437,7 @@ def render_report_markdown(report: AdoptionReport) -> str:
         "",
         "## Trial Summary",
         f"- adoption_fit: `{report.adoption_fit}`",
+        f"- adoption_profile: `{report.adoption_profile}`",
         f"- adoption_summary: {report.adoption_summary}",
         f"- primary_code_root: `{report.primary_code_root}`",
         "",
@@ -492,9 +529,9 @@ def render_start_here(report: AdoptionReport) -> str:
         "## 迁移上下文",
         "",
         f"- 项目首读摘要：`{report.docs_entry.get('project_brief', '.agent/docs/guides/project-brief.md')}`",
-        f"- 项目接入报告：`.agent/docs/guides/project-adoption-report.md`",
         f"- 旧工作区映射：`.agent/docs/guides/legacy-workspace-mapping.md`",
         f"- 当前主上下文：`{report.docs_entry.get('ai_context', '.agent/docs/guides/project-adoption-report.md')}`",
+        f"- 接入结果报告：`{report.docs_entry.get('install_report', INSTALL_REPORT_REL)}`",
         "",
         "## 纪律提醒",
         "",
@@ -655,7 +692,8 @@ def render_adoption_task(report: AdoptionReport) -> str:
         "| 路径 | 说明 |",
         "|------|------|",
         "| `README.md` | 仓库级 Agent 入口 |",
-        "| `.agent/docs/guides/project-adoption-report.md` | 当前宿主项目接入报告 |",
+        f"| `{report.docs_entry.get('project_brief', '.agent/docs/guides/project-brief.md')}` | 项目首读摘要 |",
+        f"| `{report.docs_entry.get('install_report', INSTALL_REPORT_REL)}` | ADS 接入结果报告 |",
         "| `.agent/docs/guides/legacy-workspace-mapping.md` | 旧工作区到 ADS 的映射说明 |",
         "",
         "## Memory refs（可选）",
@@ -685,12 +723,14 @@ def render_apply_summary(report: AdoptionReport) -> str:
         f"- 项目：`{report.project_name}`",
         f"- 主代码根：`{report.primary_code_root}`",
         f"- 接入模式：`{report.recommended_mode}`",
+        f"- 文档档位：`{report.adoption_profile}`",
         "",
         "## What You Have Now",
         "- `README.md` 已写入 ADS Quick Start 区块，可作为仓库级 Agent 入口。",
-        "- `.agent/docs/guides/project-brief.md` 与 `.agent/docs/guides/project-adoption-report.md` 已生成。",
+        "- `.agent/docs/guides/project-brief.md` 已生成。",
         f"- `{INSTALL_REPORT_REL}` 已生成，可作为这次接入的结果回看报告。",
         "- `.ai/START_HERE.md` 与 adoption backlog task 已生成。",
+        "- 高成熟度项目默认采用 lean profile，低频 ADS 参考文档不会默认注入宿主仓库。" if report.adoption_profile == "lean" else "- 当前为 full profile，宿主仓库中包含完整 ADS 参考文档镜像。",
         "",
         "## Run These Next",
         f"- `python3 scripts/ads_doctor.py --repo-root {report.workspace_root}`",
@@ -707,7 +747,7 @@ def render_apply_summary(report: AdoptionReport) -> str:
             "- `README.md`",
             f"- `{INSTALL_REPORT_REL}`",
             "- `.agent/docs/guides/project-brief.md`",
-            "- `.agent/docs/guides/project-adoption-report.md`",
+            "- `.agent/docs/guides/legacy-workspace-mapping.md`",
             "- `.ai/tasks/backlog/`",
         ]
     )
@@ -722,22 +762,43 @@ def render_install_report(report: AdoptionReport) -> str:
         f"- workspace_root: `{report.workspace_root}`",
         f"- primary_code_root: `{report.primary_code_root}`",
         f"- adoption_fit: `{report.adoption_fit}`",
+        f"- adoption_profile: `{report.adoption_profile}`",
         f"- recommended_mode: `{report.recommended_mode}`",
         "",
         "## What Changed",
         "- `README.md` 已写入 `ADS Agent Quick Start` 区块。",
         "- `.agent/identity.json`、`.agent/constitution.md`、`.ai/START_HERE.md` 已按项目语义生成。",
-        "- `.agent/docs/guides/project-brief.md`、`.agent/docs/guides/project-adoption-report.md`、`.agent/docs/guides/legacy-workspace-mapping.md` 已生成。",
+        "- `.agent/docs/guides/project-brief.md` 与 `.agent/docs/guides/legacy-workspace-mapping.md` 已生成。",
         "- `.ai/tasks/backlog/TASK-00000000-001-ads-adoption.md` 已生成，可作为第一个真实接入任务。",
         "",
-        "## Entry Files",
+        "## High-Frequency / Daily Use",
         "- `README.md`",
+        f"- `{report.docs_entry.get('install_report', INSTALL_REPORT_REL)}`",
         f"- `{report.docs_entry.get('project_brief', '.agent/docs/guides/project-brief.md')}`",
         f"- `{report.docs_entry.get('ai_context', '.agent/docs/guides/project-adoption-report.md')}`",
         "- `.ai/START_HERE.md`",
         "",
-        "## Verify Commands",
+        "## Low-Frequency / Reference",
     ]
+    if report.adoption_profile == "full":
+        lines.extend(
+            [
+                "- `.agent/docs/00-overview.md`",
+                "- `.agent/docs/01-principles.md`",
+                "- `.agent/docs/03-tools-and-mcp.md`",
+                "- `.agent/docs/guides/adoption-playbook.md`",
+                "- `.agent/docs/guides/client-adapters/README.md`",
+                "",
+            ]
+        )
+    else:
+        lines.extend(
+            [
+                "- ADS reference docs stay in the ADS source repo by default; lean profile keeps the host repo focused on operational context.",
+                "",
+            ]
+        )
+    lines.append("## Verify Commands")
     for name, command in report.verify_commands.items():
         lines.append(f"- `{name}`: `{command}`")
     lines.extend(
@@ -755,23 +816,34 @@ def render_install_report(report: AdoptionReport) -> str:
     return "\n".join(lines) + "\n"
 
 
-def apply_adoption(target_root: Path, force: bool = False, project_name: str | None = None) -> tuple[AdoptionReport, ads_init.InitResult]:
-    report = build_report(target_root, project_name=project_name)
+def apply_adoption(
+    target_root: Path,
+    force: bool = False,
+    project_name: str | None = None,
+    adoption_profile: str = "auto",
+) -> tuple[AdoptionReport, ads_init.InitResult]:
+    report = build_report(target_root, project_name=project_name, adoption_profile=adoption_profile)
     existing_before = {
         target_root / "README.md",
         target_root / ".agent" / "identity.json",
         target_root / ".agent" / "constitution.md",
         target_root / ".ai" / "START_HERE.md",
-        target_root / ".agent" / "docs" / "guides" / "project-adoption-report.md",
         target_root / ".agent" / "docs" / "guides" / "legacy-workspace-mapping.md",
         target_root / INSTALL_REPORT_REL,
         target_root / ".ai" / "tasks" / "backlog" / "TASK-00000000-001-ads-adoption.md",
     }
     existed_map = {path: path.exists() for path in existing_before}
-    result = ads_init.init_repo(target_root, source_root=REPO_ROOT, force=force, project_name=report.project_name)
+    result = ads_init.init_repo(
+        target_root,
+        source_root=REPO_ROOT,
+        force=force,
+        project_name=report.project_name,
+        docs_profile=report.adoption_profile,
+    )
 
-    identity = json.loads(ads_init.build_identity(REPO_ROOT, target_root, report.project_name))
+    identity = json.loads(ads_init.build_identity(REPO_ROOT, target_root, report.project_name, report.adoption_profile))
     identity["vision_one_liner"] = report.vision_one_liner
+    identity["adoption_profile"] = report.adoption_profile
     identity["standard_verify_commands"] = report.verify_commands
     identity["docs_entry"] = report.docs_entry
     identity["constraints"] = [
@@ -791,10 +863,11 @@ def apply_adoption(target_root: Path, force: bool = False, project_name: str | N
         target_root / ".agent" / "docs" / "guides" / "project-brief.md",
         ads_explain.build_explanation(target_root) + "\n",
     )
-    write_generated(
-        target_root / ".agent" / "docs" / "guides" / "project-adoption-report.md",
-        render_project_adoption_report(report),
-    )
+    if report.adoption_profile == "full":
+        write_generated(
+            target_root / ".agent" / "docs" / "guides" / "project-adoption-report.md",
+            render_project_adoption_report(report),
+        )
     write_generated(
         target_root / ".agent" / "adoption-report.json",
         render_report_json(report),
@@ -819,8 +892,10 @@ def apply_adoption(target_root: Path, force: bool = False, project_name: str | N
         vision_one_liner=report.vision_one_liner,
         primary_code_root=report.primary_code_root,
         project_brief=report.docs_entry.get("project_brief", ".agent/docs/guides/project-brief.md"),
+        install_report=report.docs_entry.get("install_report", INSTALL_REPORT_REL),
         ai_context=report.docs_entry.get("ai_context", ".agent/docs/guides/project-adoption-report.md"),
         include_legacy_mapping=True,
+        docs_profile=report.adoption_profile,
     )
     return report, result
 
@@ -831,6 +906,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--apply", action="store_true", help="bootstrap ADS into the target repository")
     parser.add_argument("--force", action="store_true", help="overwrite existing ADS files when applying")
     parser.add_argument("--project-name", help="override the detected project name, useful when adopting into a sandbox copy")
+    parser.add_argument("--adoption-profile", choices=("auto", "lean", "full"), default="auto", help="auto picks lean for mature repos and full for protocol-first repos")
     parser.add_argument("--format", choices=("markdown", "json"), default="markdown", help="report output format")
     parser.add_argument("--report-file", type=Path, help="optional path to write the markdown adoption report")
     parser.add_argument("--json-file", type=Path, help="optional path to write the JSON adoption report")
@@ -841,14 +917,19 @@ def main() -> int:
     args = parse_args()
     target_root = args.target.resolve()
     if args.apply:
-        report, result = apply_adoption(target_root, force=args.force, project_name=args.project_name)
+        report, result = apply_adoption(
+            target_root,
+            force=args.force,
+            project_name=args.project_name,
+            adoption_profile=args.adoption_profile,
+        )
         write_report_files(report, args.report_file, args.json_file)
         print(render_report_markdown(report))
         ads_init.print_summary(result, target_root)
         print(render_apply_summary(report))
         return 0
 
-    report = build_report(target_root, project_name=args.project_name)
+    report = build_report(target_root, project_name=args.project_name, adoption_profile=args.adoption_profile)
     write_report_files(report, args.report_file, args.json_file)
     if args.format == "json":
         print(render_report_json(report), end="")

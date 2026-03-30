@@ -98,11 +98,13 @@ class TestAdsSelfInstall:
 
         assert summary.branch_name.startswith("chore/ads-adoption-trial")
         assert summary.initial_branch == "main"
+        assert summary.report.adoption_profile == "lean"
         assert run_git(target_root, "branch", "--show-current") == summary.branch_name
         assert (target_root / "README.md").exists()
         assert (target_root / ".agent" / "identity.json").exists()
         assert (target_root / ".ai" / "START_HERE.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "ads-install-report.md").exists()
+        assert not (target_root / ".agent" / "docs" / "00-overview.md").exists()
 
     def test_perform_self_install_runs_validation_and_returns_dashboard_url(self, tmp_path):
         target_root = build_git_repo(tmp_path)

@@ -161,16 +161,8 @@ def build_guidance(
     primary_task: JSON | None,
 ) -> JSON:
     install_report = str(docs_entry.get("install_report", "")).strip()
-    read_this_first = unique_strings(
-        [
-            str(docs_entry.get("readme", "README.md")),
-            ".ai/START_HERE.md" if (repo_root / ".ai" / "START_HERE.md").exists() else "",
-            ".agent/constitution.md" if (repo_root / ".agent" / "constitution.md").exists() else "",
-            str(docs_entry.get("project_brief", "")),
-            install_report,
-            str(docs_entry.get("ai_context", "")),
-        ]
-    )
+    daily_use_docs, reference_docs = ads_explain.build_doc_priority(repo_root, {k: str(v) for k, v in docs_entry.items()})
+    read_this_first = unique_strings(daily_use_docs)
 
     if workspace_status == "needs_bootstrap":
         next_commands = [
@@ -190,6 +182,8 @@ def build_guidance(
     return {
         "workspace_label": workspace_label(workspace_status),
         "read_this_first": read_this_first,
+        "daily_use_docs": daily_use_docs,
+        "reference_docs": reference_docs,
         "next_commands": next_commands,
         "first_step": (
             "先读 README.md 和 ADS install report，再从 backlog 选择第一个真实任务。"
@@ -598,7 +592,8 @@ def render_overview_page(snapshot: JSON) -> str:
     latest_handoff = recent["latest_handoff"]
     latest_qa = recent["latest_qa"]
     latest_telemetry = recent["latest_telemetry"]
-    read_list = "".join(f"<span>{html.escape(item)}</span>" for item in guidance["read_this_first"])
+    daily_list = "".join(f"<span>{html.escape(item)}</span>" for item in guidance["daily_use_docs"])
+    reference_list = "".join(f"<span>{html.escape(item)}</span>" for item in guidance["reference_docs"])
     command_text = html.escape("\n".join(guidance["next_commands"]))
     mission_text = project["mission"] if project["mission"] != "unknown" else "请先在 .agent/constitution.md 中补充项目使命。"
     stage_text = project["current_stage"] if project["current_stage"] != "unknown" else "请在 .ai/START_HERE.md 中声明当前阶段。"
@@ -662,13 +657,19 @@ def render_overview_page(snapshot: JSON) -> str:
         <h2 class="section-title">快速上手</h2>
         <div class="progress-card">
           <div class="progress-item">
-            <strong>1. 先读这些文档</strong>
+            <strong>1. 高频 / 日常使用</strong>
             <div class="list" style="margin-top:10px;">
-              {read_list}
+              {daily_list}
             </div>
           </div>
           <div class="progress-item">
-            <strong>2. 当前 ADS 状态</strong>
+            <strong>2. 低频 / 参考</strong>
+            <div class="list" style="margin-top:10px;">
+              {reference_list}
+            </div>
+          </div>
+          <div class="progress-item">
+            <strong>3. 当前 ADS 状态</strong>
             <div class="list" style="margin-top:10px;">
               <span>{html.escape(guidance['workspace_label'])}</span>
               <span>项目当前阶段：{html.escape(stage_text)}</span>
@@ -677,7 +678,7 @@ def render_overview_page(snapshot: JSON) -> str:
           </div>
           {first_step_card}
           <div class="progress-item">
-            <strong>3. 建议命令</strong>
+            <strong>4. 建议命令</strong>
             <pre>{command_text}</pre>
           </div>
         </div>

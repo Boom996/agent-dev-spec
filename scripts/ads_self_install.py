@@ -49,6 +49,7 @@ class SelfInstallSummary:
             f"- target_repo: `{self.target_root}`",
             f"- initial_branch: `{self.initial_branch}`",
             f"- ads_branch: `{self.branch_name}`",
+            f"- adoption_profile: `{self.report.adoption_profile}`",
             f"- validate_ok: `{self.validate_ok}`",
             f"- dashboard_url: `{self.dashboard_url}`",
             "",
@@ -210,6 +211,7 @@ def perform_self_install(
     target_root: Path,
     ads_source_root: Path = REPO_ROOT,
     project_name: str | None = None,
+    adoption_profile: str = "auto",
     branch_prefix: str = "chore/ads-adoption-trial",
     dashboard_host: str = "127.0.0.1",
     dashboard_port: int = 8765,
@@ -228,7 +230,7 @@ def perform_self_install(
     ensure_clean_worktree(git_state)
 
     branch_name = create_trial_branch(repo_root, branch_prefix)
-    report, init_result = ads_adopt.apply_adoption(repo_root, project_name=project_name)
+    report, init_result = ads_adopt.apply_adoption(repo_root, project_name=project_name, adoption_profile=adoption_profile)
     doctor_findings = ads_doctor.run_doctor(repo_root)
     if doctor_findings:
         raise RuntimeError(ads_doctor.render_report(repo_root, doctor_findings))
@@ -257,6 +259,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target-repo", default=".", help="target repository path; defaults to the current working tree")
     parser.add_argument("--project-name", help="optional project name override")
+    parser.add_argument("--adoption-profile", choices=("auto", "lean", "full"), default="auto", help="auto picks lean for mature repos and full for protocol-first repos")
     parser.add_argument("--branch-prefix", default="chore/ads-adoption-trial", help="prefix for the temporary ADS adoption branch")
     parser.add_argument("--dashboard-host", default="127.0.0.1", help="host for the ADS dashboard")
     parser.add_argument("--dashboard-port", type=int, default=8765, help="port for the ADS dashboard")
@@ -271,6 +274,7 @@ def main() -> int:
         summary = perform_self_install(
             target_root=Path(args.target_repo),
             project_name=args.project_name,
+            adoption_profile=args.adoption_profile,
             branch_prefix=args.branch_prefix,
             dashboard_host=args.dashboard_host,
             dashboard_port=args.dashboard_port,
