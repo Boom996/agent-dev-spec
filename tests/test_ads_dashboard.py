@@ -298,12 +298,21 @@ class TestAdsDashboard:
         assert snapshot["focus"]["title"] == "当前没有进行中任务"
         assert snapshot["focus"]["next_action"] == "先从 backlog 选择一个任务，再补当前 handoff。"
         assert snapshot["guidance"]["empty_state"] == "当前仓库还没有 active task，建议先从 backlog 激活一个真实任务。"
+        assert snapshot["guidance"]["first_step"] == "先读 README.md 和 ADS install report，再从 backlog 选择第一个真实任务。"
 
     def test_render_overview_page_shows_empty_state_actions_when_no_active_task(self, tmp_path):
         ads_init.init_repo(tmp_path, source_root=REPO_ROOT, project_name="AgentGames")
+        write_file(
+            tmp_path,
+            ".agent/docs/guides/ads-install-report.md",
+            "# ADS Install Report\n\n- ready\n",
+        )
 
         html = ads_dashboard.render_overview_page(ads_dashboard.build_snapshot(tmp_path))
 
         assert "当前没有进行中任务" in html
         assert "先从 backlog 选择一个任务" in html
         assert ".ai/tasks/backlog/" in html
+        assert "接入后第一步" in html
+        assert "先读 README.md 和 ADS install report" in html
+        assert ".agent/docs/guides/ads-install-report.md" in html

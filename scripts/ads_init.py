@@ -229,6 +229,36 @@ def render_start_here(source_root: Path) -> str:
     return text
 
 
+def render_install_report(project_name: str, primary_code_root: str = ".") -> str:
+    lines = [
+        "# ADS Install Report",
+        "",
+        f"- project_name: `{project_name}`",
+        f"- primary_code_root: `{primary_code_root}`",
+        "",
+        "## What Changed",
+        "- `README.md` 已写入 `ADS Agent Quick Start` 区块。",
+        "- `.agent/identity.json`、`.agent/constitution.md`、`.ai/START_HERE.md` 已生成。",
+        "- ADS 基础脚本、模板、工具注册和文档镜像已复制到当前仓库。",
+        "",
+        "## Entry Files",
+        "- `README.md`",
+        "- `.agent/docs/guides/ads-install-report.md`",
+        "- `.ai/START_HERE.md`",
+        "- `.agent/constitution.md`",
+        "",
+        "## Run These Next",
+        "- `python3 scripts/ads_explain.py`",
+        "- `python3 scripts/ads_doctor.py`",
+        "- `python3 scripts/validate_ads.py`",
+        "- `python3 scripts/ads_dashboard.py`",
+        "",
+        "## First Step",
+        "- 先读 `README.md` 和本报告，再从 `.ai/tasks/backlog/` 选择第一个真实任务。",
+    ]
+    return "\n".join(lines) + "\n"
+
+
 def has_ads_readme_block(path: Path) -> bool:
     if not path.exists():
         return False
@@ -382,6 +412,12 @@ def init_repo(target_root: Path, source_root: Path = REPO_ROOT, force: bool = Fa
     maybe_write(target_root / ".agent" / "identity.json", build_identity(source_root, target_root, resolved_project_name), force, result)
     maybe_write(target_root / ".ai" / "START_HERE.md", render_start_here(source_root), force, result)
     maybe_write(target_root / "tools" / "toolset.json", build_toolset(), force, result)
+    maybe_write(
+        target_root / ".agent" / "docs" / "guides" / "ads-install-report.md",
+        render_install_report(resolved_project_name),
+        force,
+        result,
+    )
     write_root_readme(
         target_root,
         result,

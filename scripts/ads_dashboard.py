@@ -160,13 +160,14 @@ def build_guidance(
     workspace_status: str,
     primary_task: JSON | None,
 ) -> JSON:
+    install_report = str(docs_entry.get("install_report", "")).strip()
     read_this_first = unique_strings(
         [
             str(docs_entry.get("readme", "README.md")),
             ".ai/START_HERE.md" if (repo_root / ".ai" / "START_HERE.md").exists() else "",
             ".agent/constitution.md" if (repo_root / ".agent" / "constitution.md").exists() else "",
             str(docs_entry.get("project_brief", "")),
-            str(docs_entry.get("install_report", "")),
+            install_report,
             str(docs_entry.get("ai_context", "")),
         ]
     )
@@ -190,6 +191,11 @@ def build_guidance(
         "workspace_label": workspace_label(workspace_status),
         "read_this_first": read_this_first,
         "next_commands": next_commands,
+        "first_step": (
+            "先读 README.md 和 ADS install report，再从 backlog 选择第一个真实任务。"
+            if install_report and not primary_task
+            else "先读 README.md，确认当前任务和下一步动作。"
+        ),
         "empty_state": "当前仓库还没有 active task，建议先从 backlog 激活一个真实任务。"
         if not primary_task
         else "",
@@ -601,6 +607,19 @@ def render_overview_page(snapshot: JSON) -> str:
         if guidance["empty_state"]
         else ""
     )
+    first_step_card = (
+        f"""
+          <div class="progress-item">
+            <strong>接入后第一步</strong>
+            <div class="list" style="margin-top:10px;">
+              <span>{html.escape(guidance['first_step'])}</span>
+              <span>{html.escape(project['docs_entry'].get('install_report', 'README.md'))}</span>
+            </div>
+          </div>
+        """
+        if guidance["empty_state"]
+        else ""
+    )
     body = f"""
     <section class="hero">
       <div class="panel">
@@ -656,6 +675,7 @@ def render_overview_page(snapshot: JSON) -> str:
               <span>项目总状态：{html.escape(project['overall_status'])}</span>
             </div>
           </div>
+          {first_step_card}
           <div class="progress-item">
             <strong>3. 建议命令</strong>
             <pre>{command_text}</pre>

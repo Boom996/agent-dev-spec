@@ -18,6 +18,7 @@
     "readme": "README.md",
     "ai_context": "docs/03-development/ai-context.md",
     "project_brief": ".agent/docs/guides/project-brief.md",
+    "install_report": ".agent/docs/guides/ads-install-report.md",
     "start_here": ".ai/START_HERE.md"
   }
 }

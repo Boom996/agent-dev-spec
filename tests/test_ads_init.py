@@ -24,6 +24,7 @@ class TestAdsInit:
         assert result.created
         assert (target_root / "README.md").exists()
         assert (target_root / ".agent" / "constitution.md").exists()
+        assert (target_root / ".agent" / "docs" / "guides" / "ads-install-report.md").exists()
         assert (target_root / ".agent" / "docs" / "00-overview.md").exists()
         assert (target_root / ".agent" / "docs" / "08-harness-landscape-and-recovery.md").exists()
         assert (target_root / ".agent" / "docs" / "guides" / "adoption-playbook.md").exists()
@@ -47,6 +48,7 @@ class TestAdsInit:
         identity = json.loads((target_root / ".agent" / "identity.json").read_text(encoding="utf-8"))
         assert identity["project_name"] == "space-game"
         assert identity["standard_verify_commands"]["test"] == "TODO: add your standard verify command"
+        assert identity["docs_entry"]["install_report"] == ".agent/docs/guides/ads-install-report.md"
 
         toolset = json.loads((target_root / "tools" / "toolset.json").read_text(encoding="utf-8"))
         tool_ids = {tool["tool_id"] for tool in toolset["tools"]}
